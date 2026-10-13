@@ -51,7 +51,7 @@ struct LandingView: View {
 
                     
                     NavigationLink {
-                        
+                        LoginView()
                     } label: {
                         Text("Get Started")
                             .fontWeight(.semibold)
