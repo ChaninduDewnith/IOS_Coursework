@@ -67,6 +67,7 @@ struct WorkerProfileView: View {
                 }
 
                 NavigationLink {
+                    WorkerAvailabilityView()
                     Text("")
                 } label: {
                     profileRow(title: "Set Availability")
