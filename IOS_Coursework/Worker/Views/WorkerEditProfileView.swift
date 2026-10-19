@@ -10,7 +10,7 @@ import SwiftUI
 struct WorkerEditProfileView: View {
 
     @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel = WorkerEditProfileViewModel()
+    @StateObject private var viewModel = EditProfileViewModel()
 
     @State private var isEditingRate = false
     @State private var showPhotoAlert = false
@@ -50,17 +50,16 @@ struct WorkerEditProfileView: View {
                     }
                     .padding(.bottom, 6)
 
-                    Text("DISPLAY SERVICE NAME")
+                    Text("SERVICE CATEGORY")
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.gray)
 
-                    TextField("Certified Plumber & Heating Specialist", text: $viewModel.serviceName)
-                        .font(.footnote)
-                        .padding(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3),
+                              spacing: 10) {
+                        ForEach(viewModel.categories) { item in
+                            categoryChip(item)
+                        }
+                    }
 
                     HStack {
                         Text("HOURLY PRICE RATE")
@@ -191,5 +190,32 @@ struct WorkerEditProfileView: View {
         } message: {
             Text(viewModel.errorMessage ?? "Something went wrong.")
         }
+    }
+
+    private func categoryChip(_ item: ServiceCategory) -> some View {
+        let isSelected = viewModel.category == item.name
+
+        return Button {
+            viewModel.category = item.name
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: item.icon)
+                    .font(.system(size: 18))
+                Text(item.name)
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundColor(isSelected ? blue : .black)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(isSelected ? blue.opacity(0.1) : Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isSelected ? blue : Color.gray.opacity(0.3), lineWidth: 1)
+            )
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
     }
 }

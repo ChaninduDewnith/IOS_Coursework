@@ -145,7 +145,7 @@ struct SignUpView: View {
                         Text("Already have an account?")
                             .foregroundStyle(.gray)
 
-                        // Sign up is pushed from the login screen, so go back
+                        
                         Button("Log In") {
                             dismiss()
                         }
