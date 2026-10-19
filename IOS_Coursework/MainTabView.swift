@@ -2,18 +2,17 @@
 //  MainTabView.swift
 //  IOS_Coursework
 //
-//  Created by cobsccomp251p-055 on 2026-10-13.
+//
 //
 import SwiftUI
 
 struct MainTabView: View {
-
     var body: some View {
         TabView {
 
             
             NavigationStack {
-                
+                HomeView()
             }
             .tabItem {
                 Label("Home", systemImage: "house.fill")
@@ -21,7 +20,7 @@ struct MainTabView: View {
 
         
             NavigationStack {
-                
+                SearchView()
             }
             .tabItem {
                 Label("Search", systemImage: "magnifyingglass")
@@ -45,7 +44,7 @@ struct MainTabView: View {
 
             
             NavigationStack {
-                
+                ProfileView()
             }
             .tabItem {
                 Label("Profile", systemImage: "person")
