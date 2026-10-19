@@ -1,10 +1,3 @@
-//
-//  WorkerDashboardView.swift
-//  IOS_Coursework
-//
-//  Created by cobsccomp251p-055 on 2026-10-13.
-//
-
 import SwiftUI
 
 
@@ -18,19 +11,20 @@ struct JobRequest: Identifiable {
 
 struct WorkerDashboardView: View {
 
-    
+
     @AppStorage("userName") var userName = "Sahan Perera"
     @AppStorage("isAvailable") var isAvailable = true
     @AppStorage("workerSelectedTab") var workerSelectedTab = 0
 
     @State private var showAlert = false
     @State private var selectedCustomer = ""
+    @StateObject private var locationVM = WorkerLocationViewModel()
 
-   
+
     let upcomingJobs = 5
     let completedJobs = 142
 
-   
+
     let requests = [
         JobRequest(customerName: "Silva", service: "Leak Diagnostics & Repair",
                    location: "NO 55, Galle Road, Colombo 04.", schedule: "Today, 3:30 PM"),
@@ -40,7 +34,7 @@ struct WorkerDashboardView: View {
                    location: "NO 55, Galle Road, Colombo 04.", schedule: "Today, 3:30 PM")
     ]
 
-    
+
     var firstName: String {
         return userName.split(separator: " ").first.map(String.init) ?? userName
     }
@@ -49,10 +43,10 @@ struct WorkerDashboardView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
 
-             
+
                 HStack(spacing: 12) {
 
-               
+
                     Image(systemName: "person.crop.circle.fill")
                         .resizable()
                         .frame(width: 44, height: 44)
@@ -73,15 +67,25 @@ struct WorkerDashboardView: View {
                         .font(.caption)
                         .fontWeight(.medium)
 
-                    Toggle("", isOn: $isAvailable)
+                    Toggle("", isOn: Binding(
+                        get: { isAvailable },
+                        set: { newValue in
+                            isAvailable = newValue
+                            Task {
+                                let saved = await locationVM.setAvailable(newValue)
+                                if !saved { isAvailable = !newValue }
+                            }
+                        }
+                    ))
                         .labelsHidden()
+                        .disabled(locationVM.isUpdating)
                         .tint(Color(red: 0.23, green: 0.49, blue: 0.94))
                 }
 
-            
+
                 HStack(spacing: 12) {
 
-                   
+
                     VStack(spacing: 4) {
                         Text("\(requests.count)")
                             .font(.title2)
@@ -98,7 +102,7 @@ struct WorkerDashboardView: View {
                             .stroke(Color.gray.opacity(0.25), lineWidth: 1)
                     )
 
-                 
+
                     VStack(spacing: 4) {
                         Text("\(upcomingJobs)")
                             .font(.title2)
@@ -115,7 +119,7 @@ struct WorkerDashboardView: View {
                             .stroke(Color.gray.opacity(0.25), lineWidth: 1)
                     )
 
-                    
+
                     VStack(spacing: 4) {
                         Text("\(completedJobs)")
                             .font(.title2)
@@ -133,7 +137,10 @@ struct WorkerDashboardView: View {
                     )
                 }
 
-               
+                
+                WorkerLocationCard(viewModel: locationVM)
+
+
                 HStack {
                     Text("New Requests (\(requests.count))")
                         .fontWeight(.bold)
@@ -146,7 +153,7 @@ struct WorkerDashboardView: View {
                     .foregroundColor(Color(red: 0.23, green: 0.49, blue: 0.94))
                 }
 
-               
+
                 ForEach(requests) { request in
                     VStack(alignment: .leading, spacing: 6) {
 
@@ -187,6 +194,13 @@ struct WorkerDashboardView: View {
                 }
             }
             .padding(20)
+        }
+        .task {
+           
+            await locationVM.loadSavedLocation()
+            if let saved = locationVM.remoteIsAvailable {
+                isAvailable = saved
+            }
         }
         .alert("Request", isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
