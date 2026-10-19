@@ -1,4 +1,3 @@
-
 import Foundation
 import Combine
 import FirebaseAuth
@@ -8,10 +7,11 @@ final class LoginViewModel: ObservableObject {
 
     @Published var isLoading = false
     @Published var isLoggedIn = false
+    @Published var role: UserRole?
     @Published var errorMessage: String?
     @Published var infoMessage: String?
 
-   
+ 
 
     func login(email: String, password: String) async {
         let cleanEmail = email
@@ -35,11 +35,12 @@ final class LoginViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            _ = try await AuthService.login(
+            let result = try await AuthService.login(
                 email: cleanEmail,
                 password: password
             )
 
+            role = try await AuthService.fetchRole(uid: result.user.uid)
             isLoggedIn = true
 
         } catch {
@@ -47,7 +48,23 @@ final class LoginViewModel: ObservableObject {
         }
     }
 
-   
+
+
+    func restoreSession() async {
+        guard let user = AuthService.currentUser else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            role = try await AuthService.fetchRole(uid: user.uid)
+            isLoggedIn = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+
 
     func resetPassword(email: String) async {
         let cleanEmail = email
@@ -67,14 +84,17 @@ final class LoginViewModel: ObservableObject {
 
         do {
             try await AuthService.resetPassword(email: cleanEmail)
-
-            infoMessage =
-                "Password reset email sent. Please check your inbox."
-
+            infoMessage = "Password reset email sent. Please check your inbox."
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+
+    
+
+    func logout() {
+        try? AuthService.logout()
+        role = nil
+        isLoggedIn = false
+    }
 }
-
-
