@@ -2,8 +2,6 @@
 //  SignUpView.swift
 //  IOS_Coursework
 //
-//  Created by cobsccomp251p-055 on 2026-10-19.
-//
 
 import SwiftUI
 
@@ -114,9 +112,10 @@ struct SignUpView: View {
                         .fontWeight(.medium)
                         .padding(.bottom, 12)
 
+                    // Tags are UserRole values (viewModel.role must be UserRole)
                     Picker("Role", selection: $viewModel.role) {
-                        Text("Customer").tag("Customer")
-                        Text("Worker").tag("Worker")
+                        Text("Customer").tag(UserRole.customer)
+                        Text("Worker").tag(UserRole.worker)
                     }
                     .pickerStyle(.segmented)
                     .padding(.bottom, 28)
@@ -146,8 +145,9 @@ struct SignUpView: View {
                         Text("Already have an account?")
                             .foregroundStyle(.gray)
 
-                        NavigationLink("Log In") {
-                            LoginView()
+                        
+                        Button("Log In") {
+                            dismiss()
                         }
                         .fontWeight(.semibold)
                         .foregroundStyle(primaryColor)
@@ -194,7 +194,8 @@ struct SignUpView: View {
         }
     }
 
-    
+  
+
     private var primaryColor: Color {
         Color(red: 0.23, green: 0.49, blue: 0.94)
     }

@@ -9,16 +9,16 @@ import SwiftUI
 
 struct LandingView: View {
 
+    @ObservedObject var viewModel: LoginViewModel
+
     var body: some View {
-        
+
         NavigationStack {
             ZStack(alignment: .bottom) {
 
-                
                 Color(red: 0.31, green: 0.56, blue: 0.97)
                     .ignoresSafeArea()
 
-                
                 VStack {
                     Spacer()
                     Image(systemName: "wrench.and.screwdriver.fill")
@@ -28,10 +28,8 @@ struct LandingView: View {
                     Spacer().frame(height: 200)
                 }
 
-            
                 VStack(spacing: 20) {
 
-            
                     HStack(spacing: 10) {
                         Image(systemName: "briefcase.fill")
                             .foregroundColor(.white)
@@ -49,9 +47,8 @@ struct LandingView: View {
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
 
-                    
                     NavigationLink {
-                        LoginView()
+                        LoginView(viewModel: viewModel)
                     } label: {
                         Text("Get Started")
                             .fontWeight(.semibold)
@@ -75,5 +72,5 @@ struct LandingView: View {
 }
 
 #Preview {
-    LandingView()
+    LandingView(viewModel: LoginViewModel())
 }

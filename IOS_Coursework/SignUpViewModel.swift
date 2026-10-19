@@ -1,31 +1,22 @@
-//
-//  SignUpViewModel.swift
-//  IOS_Coursework
-//
-//  Created by cobsccomp251p-055 on 2026-10-19.
-//
-
 import Foundation
 import Combine
 
 @MainActor
 final class SignUpViewModel: ObservableObject {
-  
+
     @Published var fullName = ""
     @Published var nic = ""
     @Published var address = ""
     @Published var email = ""
     @Published var phone = ""
     @Published var password = ""
-    @Published var role = "Customer"
+    @Published var role: UserRole = .customer
     @Published var showPassword = false
 
-    
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showSuccess = false
 
-    
     private func trimmed(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -49,7 +40,6 @@ final class SignUpViewModel: ObservableObject {
         password.count >= 6
     }
 
-  
     func createAccount() async {
         guard isFormValid, !isLoading else { return }
 
@@ -64,7 +54,7 @@ final class SignUpViewModel: ObservableObject {
                 email: trimmed(email).lowercased(),
                 phone: trimmed(phone),
                 password: password,
-                role: role
+                role: role                      
             )
             showSuccess = true
         } catch {

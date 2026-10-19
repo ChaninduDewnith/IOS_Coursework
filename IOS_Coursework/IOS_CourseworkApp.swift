@@ -8,18 +8,15 @@
 import SwiftUI
 import FirebaseCore
 
-
-
 @main
 struct IOS_CourseworkApp: App {
     init() {
-           FirebaseApp.configure()
-       }
+        FirebaseApp.configure()
+    }
 
-    
     var body: some Scene {
         WindowGroup {
-            LandingView()
+            RootView()
         }
     }
 }
