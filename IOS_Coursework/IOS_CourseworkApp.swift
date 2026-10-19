@@ -6,9 +6,17 @@
 //
 
 import SwiftUI
+import FirebaseCore
+
+
 
 @main
 struct IOS_CourseworkApp: App {
+    init() {
+           FirebaseApp.configure()
+       }
+
+    
     var body: some Scene {
         WindowGroup {
             LandingView()
