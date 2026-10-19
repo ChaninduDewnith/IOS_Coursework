@@ -205,7 +205,7 @@ struct LoginView: View {
                                 .foregroundColor(.gray)
 
                             NavigationLink {
-                                CreateAccountView()
+                                SignUpView()
                             } label: {
                                 Text("Sign Up")
                                     .fontWeight(.semibold)
