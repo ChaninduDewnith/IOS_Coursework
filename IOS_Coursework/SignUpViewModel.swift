@@ -53,6 +53,11 @@ final class SignUpViewModel: ObservableObject {
     func createAccount() async {
         guard isFormValid, !isLoading else { return }
 
+        guard let userRole = UserRole(rawValue: role.lowercased()) else {
+            errorMessage = "Please select a valid account type."
+            return
+        }
+
         isLoading = true
         defer { isLoading = false }
 
@@ -64,7 +69,7 @@ final class SignUpViewModel: ObservableObject {
                 email: trimmed(email).lowercased(),
                 phone: trimmed(phone),
                 password: password,
-                role: role
+                role: userRole
             )
             showSuccess = true
         } catch {

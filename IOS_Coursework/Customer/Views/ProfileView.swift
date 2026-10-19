@@ -9,23 +9,23 @@ import SwiftUI
 
 struct ProfileView: View {
 
-
     var showBackButton = false
 
-    
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var viewModel: LoginViewModel
 
-    
-    @AppStorage("isLoggedIn") var isLoggedIn = false
     @AppStorage("userName") var userName = "Silva"
     @AppStorage("userEmail") var userEmail = "silva@example.com"
     @AppStorage("userPhone") var userPhone = "+94 706533150"
     @AppStorage("notificationsOn") var notificationsOn = true
     @AppStorage("locationOn") var locationOn = true
 
+    private let brandBlue = Color(red: 0.23, green: 0.49, blue: 0.94)
+
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
+
                 if showBackButton {
                     HStack {
                         Button {
@@ -40,12 +40,11 @@ struct ProfileView: View {
                     }
                 }
 
-              
                 Image(systemName: "person.fill")
                     .font(.system(size: 36))
                     .foregroundColor(.white)
                     .frame(width: 80, height: 80)
-                    .background(Color(red: 0.23, green: 0.49, blue: 0.94))
+                    .background(brandBlue)
                     .cornerRadius(20)
 
                 VStack(spacing: 3) {
@@ -60,106 +59,29 @@ struct ProfileView: View {
                 }
                 .padding(.bottom, 8)
 
-                
-
-        
                 NavigationLink {
-                    
+                    Text("Edit Profile coming soon")
                 } label: {
-                    HStack {
-                        Text("Edit Profile")
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .foregroundColor(.black)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .padding(14)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                    )
+                    profileRow(title: "Edit Profile")
                 }
 
-        
                 NavigationLink {
                     Text("Saved Favorites coming soon")
                 } label: {
-                    HStack {
-                        Text("Saved Favorites")
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .foregroundColor(.black)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .padding(14)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                    )
+                    profileRow(title: "Saved Favorites")
                 }
 
-            
                 NavigationLink {
                     Text("Booking History coming soon")
                 } label: {
-                    HStack {
-                        Text("Booking History")
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .foregroundColor(.black)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .padding(14)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                    )
+                    profileRow(title: "Booking History")
                 }
 
-            
-                HStack {
-                    Text("Notification Settings")
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Toggle("", isOn: $notificationsOn)
-                        .labelsHidden()
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                )
+                toggleRow(title: "Notification Settings", isOn: $notificationsOn)
+                toggleRow(title: "Location Services", isOn: $locationOn)
 
-        
-                HStack {
-                    Text("Location Services")
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Toggle("", isOn: $locationOn)
-                        .labelsHidden()
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                )
-
-            
                 Button {
-                    isLoggedIn = false
+                    viewModel.logout()
                 } label: {
                     Text("Logout")
                         .font(.footnote)
@@ -180,14 +102,42 @@ struct ProfileView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-}
 
+    
 
+    private func profileRow(title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundColor(.black)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        .padding(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
+        )
+    }
 
-
-
-#Preview {
-    NavigationStack {
-        ProfileView()
+    private func toggleRow(title: String, isOn: Binding<Bool>) -> some View {
+        HStack {
+            Text(title)
+                .font(.footnote)
+                .fontWeight(.medium)
+            Spacer()
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
+        )
     }
 }
+

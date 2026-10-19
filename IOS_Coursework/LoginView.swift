@@ -7,7 +7,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var showPassword = false
 
-    @StateObject private var viewModel = LoginViewModel()
+    @ObservedObject var viewModel: LoginViewModel
 
     @State private var showResetAlert = false
 
@@ -171,13 +171,7 @@ struct LoginView: View {
 
                        
 
-                        NavigationLink(
-                            destination: MainTabView(),
-                            isActive: $viewModel.isLoggedIn
-                        ) {
-                            EmptyView()
-                        }
-                        .hidden()
+                     
 
            
 
@@ -258,7 +252,5 @@ struct LoginView: View {
     }
 }
 
-#Preview {
-    LoginView()
-}
+
 

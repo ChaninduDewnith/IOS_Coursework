@@ -7,7 +7,7 @@
 import SwiftUI
 
 
-struct WorkerTabView: View {
+struct WorkerMainTabView: View {
     var body: some View {
         TabView{
             NavigationStack {
@@ -32,7 +32,7 @@ struct WorkerTabView: View {
                
 
             NavigationStack {
-                
+                WorkerProfileView()
             }
                 .tabItem {
                     Label("Profile", systemImage: "person")
@@ -44,6 +44,6 @@ struct WorkerTabView: View {
 }
 
 #Preview {
-    WorkerTabView()
+    WorkerMainTabView()
 }
 
