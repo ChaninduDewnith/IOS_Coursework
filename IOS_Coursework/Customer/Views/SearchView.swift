@@ -8,234 +8,198 @@
 import SwiftUI
 
 
-struct SearchResult: Identifiable {
-    let id = UUID()
-    var name: String
-    var job: String
-    var category: String
-    var rating: Double
-    var distance: Double
-    var isAvailable: Bool
-    var nextSlot: String
-}
 
 struct SearchView: View {
 
+    @StateObject private var viewModel: SearchViewModel
+    var onChoose: (WorkerResult) -> Void
     
-    var showBackButton = false
+    var onBackToHome: () -> Void = {}
 
+    @State private var chosenWorkerID: String?
 
-    @Environment(\.dismiss) var dismiss
+    private let blue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
-    @State private var searchText = "Plumber"
-    @State private var selectedFilter = "Near Me"
-
-    let filters = ["Near Me", "Top Rated", "Available Today"]
-
-    
-    let allWorkers = [
-        SearchResult(name: "Sahan Perera", job: "Certified Plumber & Heating", category: "Plumber",
-                     rating: 4.9, distance: 1.2, isAvailable: true, nextSlot: ""),
-        SearchResult(name: "Kamal", job: "Vence & Sons Plumbing Experts", category: "Plumber",
-                     rating: 4.7, distance: 2.4, isAvailable: true, nextSlot: ""),
-        SearchResult(name: "Sarath", job: "Master Plumber & Pipefitter", category: "Plumber",
-                     rating: 4.6, distance: 3.1, isAvailable: false, nextSlot: "4PM"),
-        SearchResult(name: "Nimal Fernando", job: "Licensed Home Electrician", category: "Electrician",
-                     rating: 4.7, distance: 2.1, isAvailable: true, nextSlot: ""),
-        SearchResult(name: "Pathum Silva", job: "Eco-Friendly Home Cleaning", category: "Cleaner",
-                     rating: 4.8, distance: 0.5, isAvailable: true, nextSlot: "")
-    ]
-
-    
-    var results: [SearchResult] {
-
-    
-        var list = allWorkers
-        if searchText != "" {
-            let text = searchText.lowercased()
-            list = list.filter {
-                $0.name.lowercased().contains(text) ||
-                $0.job.lowercased().contains(text) ||
-                $0.category.lowercased().contains(text)
-            }
-        }
-
-    
-        if selectedFilter == "Near Me" {
-            list = list.sorted { $0.distance < $1.distance }
-        } else if selectedFilter == "Top Rated" {
-            list = list.sorted { $0.rating > $1.rating }
-        } else if selectedFilter == "Available Today" {
-            list = list.filter { $0.isAvailable }
-        }
-
-        return list
+    init(initialSearch: String = "",
+         onChoose: @escaping (WorkerResult) -> Void = { _ in }) {
+        _viewModel = StateObject(wrappedValue: SearchViewModel(searchText: initialSearch))
+        self.onChoose = onChoose
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(spacing: 14) {
 
-    
-            if showBackButton {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                }
-            }
+            searchField
 
-    
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(Color(red: 0.23, green: 0.49, blue: 0.94))
+            filterChips
 
-                TextField("What service do you need?", text: $searchText)
-
-            
-                if searchText != "" {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                }
-
-            
-                NavigationLink {
-                    
-                } label: {
-                    Image(systemName: "map")
-                        .foregroundColor(Color(red: 0.23, green: 0.49, blue: 0.94))
-                }
-            }
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(red: 0.23, green: 0.49, blue: 0.94), lineWidth: 1.5)
-            )
-
-    
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(filters, id: \.self) { filter in
-                        Button {
-                            selectedFilter = filter
-                        } label: {
-                            Text(filter)
-                                .font(.footnote)
-                                .fontWeight(.medium)
-                                .foregroundColor(selectedFilter == filter ? .white : Color(red: 0.23, green: 0.49, blue: 0.94))
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 8)
-                                .background(selectedFilter == filter ? Color(red: 0.23, green: 0.49, blue: 0.94) : Color.white)
-                                .cornerRadius(20)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(Color(red: 0.23, green: 0.49, blue: 0.94), lineWidth: 1)
-                                )
-                        }
-                    }
-                }
-            }
-
-        
             ScrollView {
-                VStack(spacing: 12) {
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.results) { worker in
+                        workerCard(worker)
+                    }
 
-                    if results.isEmpty {
-                        Text("No workers found.")
+                    if !viewModel.isLoading && viewModel.results.isEmpty {
+                        Text("No workers found nearby.")
+                            .font(.footnote)
                             .foregroundColor(.gray)
                             .padding(.top, 40)
                     }
+                }
+                .padding(.bottom, 80)
+            }
+            .refreshable { await viewModel.load() }
+            .overlay {
+                if viewModel.isLoading && viewModel.allWorkers.isEmpty {
+                    ProgressView()
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .overlay(alignment: .bottom) {
+            NavigationLink {
+                WorkerMapView(viewModel: viewModel, onChoose: onChoose, onBackToHome: onBackToHome)
+            } label: {
+                Label("View on Map", systemImage: "map.fill")
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(blue)
+                    .clipShape(Capsule())
+                    .shadow(radius: 4, y: 2)
+            }
+            .padding(.bottom, 12)
+        }
+        .workerFlow(selection: $chosenWorkerID, onBackToHome: onBackToHome)
+        .task { await viewModel.load() }
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "Something went wrong.")
+        }
+    }
 
-                
-                    ForEach(results) { worker in
-                        VStack(alignment: .leading, spacing: 8) {
+   
 
-                        
-                            HStack {
-                                Text(worker.name)
-                                    .fontWeight(.bold)
-                                Spacer()
-                                Image(systemName: "star.fill")
-                                    .foregroundColor(.yellow)
-                                    .font(.caption)
-                                Text(String(format: "%.1f", worker.rating))
-                                    .font(.caption)
-                                    .fontWeight(.bold)
-                            }
+    private var searchField: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(blue)
 
-                    
-                            Text(worker.job)
-                                .font(.footnote)
-                                .foregroundColor(.gray)
+            TextField("Search plumber, electrician...", text: $viewModel.searchText)
+                .autocorrectionDisabled()
 
-                            
-                            HStack {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Text(String(format: "%.1f miles", worker.distance))
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+            if !viewModel.searchText.isEmpty {
+                Button {
+                    viewModel.searchText = ""
+                } label: {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .padding(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(blue, lineWidth: 1.5)
+        )
+    }
 
-                            
-                                if worker.isAvailable {
-                                    Text("Available")
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.green)
-                                        .padding(5)
-                                        .background(Color.green.opacity(0.15))
-                                        .cornerRadius(6)
-                                } else {
-                                    Text("Next Slot: \(worker.nextSlot)")
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.orange)
-                                        .padding(5)
-                                        .background(Color.orange.opacity(0.15))
-                                        .cornerRadius(6)
-                                }
-
-                                Spacer()
-
-                    
-                                NavigationLink {
-                                   
-                                } label: {
-                                    Text("Choose")
-                                        .font(.footnote)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
-                                        .background(Color(red: 0.23, green: 0.49, blue: 0.94))
-                                        .cornerRadius(8)
-                                }
-                            }
-                        }
-                        .padding(14)
-                        .background(Color.white)
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-                        )
+    private var filterChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(SearchViewModel.Filter.allCases) { item in
+                    let isSelected = viewModel.filter == item
+                    Button {
+                        viewModel.filter = item
+                    } label: {
+                        Text(item.rawValue)
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(isSelected ? .white : .black)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(isSelected ? blue : Color.white)
+                            .overlay(
+                                Capsule().stroke(isSelected ? blue : Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                            .clipShape(Capsule())
                     }
                 }
             }
         }
-        .padding(20)
-        .navigationBarBackButtonHidden(true)
     }
-}
 
-#Preview {
-    NavigationStack {
-        SearchView()
+    private func workerCard(_ worker: WorkerResult) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(worker.name)
+                        .fontWeight(.bold)
+                    Text(subtitle(for: worker))
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+                }
+                Spacer()
+                HStack(spacing: 3) {
+                    Image(systemName: "star")
+                        .foregroundColor(.orange)
+                    Text(worker.rating.map { String(format: "%.1f", $0) } ?? "New")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                }
+            }
+
+            HStack(spacing: 8) {
+                if let distance = worker.distanceMiles {
+                    Image(systemName: "mappin.circle")
+                        .foregroundColor(.gray)
+                    Text(String(format: "%.1f miles", distance))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+
+                Text(worker.statusText)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(worker.isAvailableToday ? Color(red: 0.1, green: 0.6, blue: 0.4) : .gray)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        (worker.isAvailableToday ? Color.green : Color.gray).opacity(0.15)
+                    )
+                    .cornerRadius(4)
+
+                Spacer()
+
+                Button {
+                    onChoose(worker)
+                    chosenWorkerID = worker.id
+                } label: {
+                    Text("Choose")
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 8)
+                        .background(blue)
+                        .cornerRadius(8)
+                }
+            }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
+        )
+    }
+
+    private func subtitle(for worker: WorkerResult) -> String {
+        [worker.category, worker.experience]
+            .filter { !$0.isEmpty }
+            .joined(separator: " · ")
     }
 }
