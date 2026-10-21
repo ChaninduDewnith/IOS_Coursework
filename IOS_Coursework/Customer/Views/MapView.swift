@@ -8,15 +8,19 @@
 import SwiftUI
 import MapKit
 
+
+
 struct WorkerMapView: View {
 
     @ObservedObject var viewModel: SearchViewModel
     var onChoose: (WorkerResult) -> Void = { _ in }
+    var onBackToHome: () -> Void = {}
 
     @Environment(\.dismiss) var dismiss
 
     @State private var position: MapCameraPosition = .automatic
     @State private var selectedID: String?
+    @State private var chosenWorkerID: String?
 
     private let blue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
@@ -56,6 +60,7 @@ struct WorkerMapView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: selectedID)
         .navigationBarBackButtonHidden(true)
+        .workerFlow(selection: $chosenWorkerID, onBackToHome: onBackToHome)
         .onChange(of: selectedID) { _, newValue in
             guard let worker = viewModel.results.first(where: { $0.id == newValue }) else { return }
             withAnimation {
@@ -66,7 +71,7 @@ struct WorkerMapView: View {
         }
     }
 
-    
+   
 
     private var topBar: some View {
         HStack(spacing: 10) {
@@ -109,7 +114,7 @@ struct WorkerMapView: View {
         .padding(.top, 8)
     }
 
-  
+    
 
     private func selectedCard(_ worker: WorkerResult) -> some View {
         HStack(spacing: 12) {
@@ -138,6 +143,7 @@ struct WorkerMapView: View {
 
             Button {
                 onChoose(worker)
+                chosenWorkerID = worker.id
             } label: {
                 Text("Choose")
                     .font(.footnote)

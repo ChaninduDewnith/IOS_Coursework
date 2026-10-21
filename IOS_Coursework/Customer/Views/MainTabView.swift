@@ -28,7 +28,7 @@ struct MainTabView: View {
 
             
             NavigationStack {
-                
+                MyBookingsView()
             }
             .tabItem {
                 Label("Bookings", systemImage: "calendar")
