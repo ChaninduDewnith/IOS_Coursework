@@ -60,22 +60,19 @@ struct WorkerProfileView: View {
                 .padding(.bottom, 8)
 
                 NavigationLink {
-                    Text("Edit Profile coming soon")
+                    WorkerEditProfileView()
+                   
                 } label: {
                     profileRow(title: "Edit Profile")
                 }
 
                 NavigationLink {
-                    Text("Saved Favorites coming soon")
+                    WorkerAvailabilityView()
+                    Text("")
                 } label: {
-                    profileRow(title: "Saved Favorites")
+                    profileRow(title: "Set Availability")
                 }
 
-                NavigationLink {
-                    Text("Booking History coming soon")
-                } label: {
-                    profileRow(title: "Booking History")
-                }
 
                 toggleRow(title: "Notification Settings", isOn: $notificationsOn)
                 toggleRow(title: "Location Services", isOn: $locationOn)

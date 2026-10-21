@@ -16,7 +16,10 @@ struct IOS_CourseworkApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            
+                RootView()
+        
+          
         }
     }
 }

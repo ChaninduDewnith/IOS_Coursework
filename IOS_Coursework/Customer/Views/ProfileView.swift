@@ -64,6 +64,8 @@ struct ProfileView: View {
                 } label: {
                     profileRow(title: "Edit Profile")
                 }
+                
+              
 
                 NavigationLink {
                     Text("Saved Favorites coming soon")
