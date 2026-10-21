@@ -29,10 +29,10 @@ struct WorkerResult: Identifiable {
     let workingDays: [String]
     let startTime: String
     let endTime: String
-   
     let isOnline: Bool
     var distanceMiles: Double?
 
+  
     init?(id: String, data: [String: Any]) {
         guard let geo = data["location"] as? GeoPoint else { return nil }
 
@@ -52,7 +52,7 @@ struct WorkerResult: Identifiable {
         self.endTime = availability["endTime"] as? String ?? "18:00"
     }
 
-    
+   
 
     private static let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
@@ -62,7 +62,7 @@ struct WorkerResult: Identifiable {
               let end = Self.minutes(endTime) else { return .unavailable }
 
         let calendar = Calendar.current
-        let weekday = calendar.component(.weekday, from: now) - 1 // 0 = Sun
+        let weekday = calendar.component(.weekday, from: now) - 1
         let current = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now)
 
         if workingDays.contains(Self.dayNames[weekday]) {
@@ -70,7 +70,7 @@ struct WorkerResult: Identifiable {
             if current < start { return .opensToday("Opens \(Self.display(startTime))") }
         }
 
-        
+       
         for offset in 1...7 {
             let index = (weekday + offset) % 7
             if workingDays.contains(Self.dayNames[index]) {
@@ -100,6 +100,7 @@ struct WorkerResult: Identifiable {
         return false
     }
 
+ 
 
     private static func minutes(_ time: String) -> Int? {
         let parts = time.split(separator: ":")

@@ -7,10 +7,16 @@
 
 import SwiftUI
 
+
+
 struct SearchView: View {
 
     @StateObject private var viewModel: SearchViewModel
     var onChoose: (WorkerResult) -> Void
+    
+    var onBackToHome: () -> Void = {}
+
+    @State private var chosenWorkerID: String?
 
     private let blue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
@@ -53,7 +59,7 @@ struct SearchView: View {
         .padding(.top, 8)
         .overlay(alignment: .bottom) {
             NavigationLink {
-                WorkerMapView(viewModel: viewModel, onChoose: onChoose)
+                WorkerMapView(viewModel: viewModel, onChoose: onChoose, onBackToHome: onBackToHome)
             } label: {
                 Label("View on Map", systemImage: "map.fill")
                     .font(.footnote)
@@ -67,6 +73,7 @@ struct SearchView: View {
             }
             .padding(.bottom, 12)
         }
+        .workerFlow(selection: $chosenWorkerID, onBackToHome: onBackToHome)
         .task { await viewModel.load() }
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) { }
@@ -75,7 +82,7 @@ struct SearchView: View {
         }
     }
 
-  
+   
 
     private var searchField: some View {
         HStack(spacing: 10) {
@@ -170,6 +177,7 @@ struct SearchView: View {
 
                 Button {
                     onChoose(worker)
+                    chosenWorkerID = worker.id
                 } label: {
                     Text("Choose")
                         .font(.footnote)
