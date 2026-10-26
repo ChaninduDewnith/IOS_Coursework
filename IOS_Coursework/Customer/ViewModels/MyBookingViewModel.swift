@@ -10,6 +10,9 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
+
+
+
 struct BookingItem: Identifiable, Equatable {
     let id: String
     let workerId: String
@@ -67,7 +70,7 @@ final class MyBookingsViewModel: ObservableObject {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
-   
+  
 
     var bookings: [BookingItem] {
         let now = Date()
@@ -84,7 +87,7 @@ final class MyBookingsViewModel: ObservableObject {
             filtered = allBookings.filter { $0.isConfirmed }
         }
 
-      
+       
         return filtered.sorted {
             ($0.scheduledAt ?? .distantFuture) < ($1.scheduledAt ?? .distantFuture)
         }
@@ -98,9 +101,7 @@ final class MyBookingsViewModel: ObservableObject {
         }
     }
 
-    
 
-    
     func start() {
         guard listener == nil else { return }
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -134,8 +135,6 @@ final class MyBookingsViewModel: ObservableObject {
     }
 
     
-
-    
     func cancel(_ booking: BookingItem) async {
         bookingToCancel = nil
 
@@ -147,15 +146,23 @@ final class MyBookingsViewModel: ObservableObject {
                 "status": "cancelled",
                 "cancelledAt": FieldValue.serverTimestamp()
             ])
-            
+
+            let day = DateFormatter()
+            day.locale = Locale(identifier: "en_US")
+            day.dateFormat = "MMM d"
+            let when = booking.scheduledAt.map { " on \(day.string(from: $0))" } ?? ""
+            await NotificationService.send(
+                to: booking.workerId, type: "booking_cancelled",
+                title: "Booking Cancelled",
+                message: "\(booking.customerName) cancelled the \(booking.service.lowercased()) request\(when).",
+                bookingID: booking.id)
+           
         } catch {
             show("Could not cancel booking: \(error.localizedDescription)")
         }
     }
 
-  
-
- 
+   
     func dateText(_ booking: BookingItem) -> String {
         guard let date = booking.scheduledAt else { return "--" }
         let formatter = DateFormatter()

@@ -127,8 +127,12 @@ struct HomeView: View {
                 .frame(width: 40, height: 40)
                 .background(blue.opacity(0.15))
                 .clipShape(Circle())
-
-            Image(systemName: "bell.fill")
+            
+            NavigationLink {
+                NotificationsView()
+            } label: {
+                Image(systemName: "bell.fill")}
+            
         }
     }
 
