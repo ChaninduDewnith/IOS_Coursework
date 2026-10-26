@@ -68,13 +68,13 @@ struct ProfileView: View {
               
 
                 NavigationLink {
-                    Text("Saved Favorites coming soon")
+                    FavoritesView()
                 } label: {
                     profileRow(title: "Saved Favorites")
                 }
 
                 NavigationLink {
-                    Text("Booking History coming soon")
+                    BookingHistoryView()
                 } label: {
                     profileRow(title: "Booking History")
                 }

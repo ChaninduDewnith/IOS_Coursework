@@ -26,6 +26,12 @@ final class BookingDetailsViewModel: ObservableObject {
     @Published private(set) var category = ""
     @Published private(set) var scheduledAt: Date?
     @Published private(set) var address = ""
+    @Published private(set) var status = "pending"
+    @Published private(set) var issue = ""
+    @Published private(set) var customerName = ""
+    @Published private(set) var hourlyRate: Double = 0
+    @Published private(set) var startedAt: Date?
+    @Published private(set) var completedAt: Date?
     @Published private(set) var steps: [TimelineStep] = []
     @Published private(set) var isLoading = false
     @Published private(set) var notFound = false
@@ -37,9 +43,7 @@ final class BookingDetailsViewModel: ObservableObject {
         self.bookingID = bookingID
     }
 
-   
-
-  
+ 
     var dateTimeText: String {
         guard let scheduledAt else { return "--" }
         let formatter = DateFormatter()
@@ -58,6 +62,36 @@ final class BookingDetailsViewModel: ObservableObject {
     }
 
     
+
+    var isCompleted: Bool { status == "completed" }
+
+    
+    var durationText: String? {
+        guard let startedAt, let completedAt, completedAt > startedAt else { return nil }
+        let minutes = Int(completedAt.timeIntervalSince(startedAt) / 60)
+        let hours = minutes / 60
+        let rest = minutes % 60
+        if hours == 0 { return "\(max(rest, 1)) min" }
+        return rest == 0 ? "\(hours) h" : "\(hours) h \(rest) min"
+    }
+
+  
+    func pdfData() -> BookingPDFData {
+        BookingPDFData(
+            reference: String(bookingID.prefix(8)).uppercased(),
+            customerName: customerName,
+            workerName: workerName,
+            service: category,
+            address: address,
+            issue: issue,
+            scheduledAt: scheduledAt,
+            hourlyRate: hourlyRate,
+            duration: durationText,
+            steps: steps
+        )
+    }
+
+  
 
     func start() {
         guard listener == nil else { return }
@@ -95,6 +129,13 @@ final class BookingDetailsViewModel: ObservableObject {
 
         func date(_ key: String) -> Date? { (data[key] as? Timestamp)?.dateValue() }
 
+        status = data["status"] as? String ?? "pending"
+        issue = data["issue"] as? String ?? ""
+        customerName = data["customerName"] as? String ?? ""
+        hourlyRate = (data["hourlyRate"] as? NSNumber)?.doubleValue ?? 0
+        startedAt = date("startedAt")
+        completedAt = date("completedAt")
+
         steps = Self.buildSteps(
             status: data["status"] as? String ?? "pending",
             createdAt: date("createdAt"),
@@ -108,6 +149,7 @@ final class BookingDetailsViewModel: ObservableObject {
 
     
 
+ 
     private static func buildSteps(status: String,
                                    createdAt: Date?,
                                    acceptedAt: Date?,
@@ -127,12 +169,13 @@ final class BookingDetailsViewModel: ObservableObject {
             break
         }
 
+        
         let rank: Int
         switch status {
         case "accepted": rank = 1
         case "in_progress": rank = 2
         case "completed": rank = 3
-        default: rank = 0 // pending
+        default: rank = 0 
         }
 
         func kind(_ step: Int) -> TimelineStep.Kind { rank >= step ? .done : .upcoming }

@@ -36,7 +36,7 @@ struct MainTabView: View {
 
         
             NavigationStack {
-                
+                FavoritesView()
             }
             .tabItem {
                 Label("Favorites", systemImage: "heart")

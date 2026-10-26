@@ -12,6 +12,9 @@ struct BookingDetailsView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: BookingDetailsViewModel
 
+    @State private var pdfFile: PDFFile?
+    @State private var pdfFailed = false
+
     private let blue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
     init(bookingID: String) {
@@ -41,6 +44,10 @@ struct BookingDetailsView: View {
                     workerCard
                     serviceCard
                     statusCard
+
+                    if viewModel.isCompleted {
+                        downloadButton
+                    }
                 }
             }
             .padding(20)
@@ -53,9 +60,44 @@ struct BookingDetailsView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear { viewModel.start() }
         .onDisappear { viewModel.stop() }
+        .sheet(item: $pdfFile) { file in
+            PDFPreviewScreen(file: file)
+        }
+        .alert("Could not create the PDF", isPresented: $pdfFailed) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Please try again.")
+        }
     }
 
+  
 
+    private var downloadButton: some View {
+        Button {
+            makePDF()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.down.doc.fill")
+                Text("Download PDF")
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(blue)
+            .cornerRadius(12)
+        }
+    }
+
+    private func makePDF() {
+        if let url = BookingPDFExporter.makeFile(for: viewModel.pdfData()) {
+            pdfFile = PDFFile(url: url)
+        } else {
+            pdfFailed = true
+        }
+    }
+
+    
 
     private var workerCard: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -70,7 +112,7 @@ struct BookingDetailsView: View {
         .background(card)
     }
 
- 
+   
 
     private var serviceCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -122,7 +164,7 @@ struct BookingDetailsView: View {
     private func timelineRow(_ step: TimelineStep, isLast: Bool, nextIsDone: Bool) -> some View {
         HStack(alignment: .top, spacing: 14) {
 
-            
+           
             ZStack(alignment: .top) {
                 if !isLast {
                     Rectangle()
