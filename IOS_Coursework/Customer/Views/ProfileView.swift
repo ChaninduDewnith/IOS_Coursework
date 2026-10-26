@@ -5,7 +5,11 @@
 //  Created by cobsccomp251p-055 on 2026-10-13.
 //
 
+
+
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct ProfileView: View {
 
@@ -60,7 +64,7 @@ struct ProfileView: View {
                 .padding(.bottom, 8)
 
                 NavigationLink {
-                    Text("Edit Profile coming soon")
+                    CustomerEditProfileView()
                 } label: {
                     profileRow(title: "Edit Profile")
                 }
@@ -103,6 +107,20 @@ struct ProfileView: View {
             .padding(20)
         }
         .navigationBarBackButtonHidden(true)
+        .task { await loadProfile() }
+    }
+
+   
+    private func loadProfile() async {
+        guard let user = Auth.auth().currentUser else { return }
+        userEmail = user.email ?? userEmail
+
+        if let data = try? await Firestore.firestore()
+            .collection("users").document(user.uid).getDocument().data() {
+            if let name = data["fullName"] as? String, !name.isEmpty { userName = name }
+            if let phone = data["phone"] as? String, !phone.isEmpty { userPhone = phone }
+            if let email = data["email"] as? String, !email.isEmpty { userEmail = email }
+        }
     }
 
     
@@ -142,4 +160,3 @@ struct ProfileView: View {
         )
     }
 }
-
