@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct LoginView: View {
@@ -175,22 +174,47 @@ struct LoginView: View {
 
            
 
-                        HStack(spacing: 14) {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.25))
-                                .frame(height: 1)
+                        if viewModel.canUseFaceID {
+                            HStack(spacing: 14) {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.25))
+                                    .frame(height: 1)
 
-                            Text("OR")
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                                Text("OR")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
 
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.25))
-                                .frame(height: 1)
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.25))
+                                    .frame(height: 1)
+                            }
+                            .padding(.vertical, 24)
+
+                            Button {
+                                Task { await viewModel.loginWithFaceID() }
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "faceid")
+                                        .font(.title3)
+
+                                    Text("Log in with Face ID")
+                                        .font(.headline)
+                                }
+                                .foregroundColor(primaryColor)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(primaryColor.opacity(0.1))
+                                .cornerRadius(12)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(primaryColor.opacity(0.35), lineWidth: 1)
+                                }
+                            }
+                            .disabled(viewModel.isLoading)
+                            .padding(.bottom, 24)
+                        } else {
+                            Spacer().frame(height: 28)
                         }
-                        .padding(.vertical, 28)
-
-                   
 
                         HStack(spacing: 5) {
                             Spacer()
@@ -237,6 +261,10 @@ struct LoginView: View {
                 .background(Color(uiColor: .systemBackground))
             }
             .toolbar(.hidden, for: .navigationBar)
+            .task(id: viewModel.canUseFaceID) {
+               
+                await viewModel.loginWithFaceID(automatic: true)
+            }
             .alert("Reset Password", isPresented: $showResetAlert) {
                 Button("Cancel", role: .cancel) {}
 
@@ -251,6 +279,3 @@ struct LoginView: View {
         }
     }
 }
-
-
-

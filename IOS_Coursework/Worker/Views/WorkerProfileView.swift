@@ -5,7 +5,11 @@
 //  Created by cobsccomp251p-055 on 2026-10-19.
 //
 
+
+
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 struct WorkerProfileView: View {
 
@@ -19,6 +23,9 @@ struct WorkerProfileView: View {
     @AppStorage("userPhone") var userPhone = "+94 706533150"
     @AppStorage("notificationsOn") var notificationsOn = true
     @AppStorage("locationOn") var locationOn = true
+
+    @State private var faceIDMessage: String?
+    @State private var isUpdatingFaceID = false
 
     private let brandBlue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
@@ -60,19 +67,26 @@ struct WorkerProfileView: View {
                 .padding(.bottom, 8)
 
                 NavigationLink {
-                    WorkerEditProfileView()
-                   
+                    CustomerEditProfileView()
                 } label: {
                     profileRow(title: "Edit Profile")
                 }
+                
+              
 
                 NavigationLink {
-                    WorkerAvailabilityView()
-                    Text("")
+                    FavoritesView()
                 } label: {
-                    profileRow(title: "Set Availability")
+                    profileRow(title: "Saved Favorites")
                 }
 
+                NavigationLink {
+                    BookingHistoryView()
+                } label: {
+                    profileRow(title: "Booking History")
+                }
+
+                faceIDSection
 
                 toggleRow(title: "Notification Settings", isOn: $notificationsOn)
                 toggleRow(title: "Location Services", isOn: $locationOn)
@@ -98,9 +112,103 @@ struct WorkerProfileView: View {
             .padding(20)
         }
         .navigationBarBackButtonHidden(true)
+        .task { await loadProfile() }
     }
 
- 
+
+    private func loadProfile() async {
+        guard let user = Auth.auth().currentUser else { return }
+        userEmail = user.email ?? userEmail
+
+        if let data = try? await Firestore.firestore()
+            .collection("users").document(user.uid).getDocument().data() {
+            if let name = data["fullName"] as? String, !name.isEmpty { userName = name }
+            if let phone = data["phone"] as? String, !phone.isEmpty { userPhone = phone }
+            if let email = data["email"] as? String, !email.isEmpty { userEmail = email }
+        }
+    }
+
+    
+
+   
+
+    private var faceIDSection: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                Image(systemName: "faceid")
+                    .font(.title2)
+                    .foregroundColor(brandBlue)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Enable Face ID")
+                        .font(.footnote)
+                        .fontWeight(.medium)
+
+                    Text("Log in to Workly with Face ID")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+
+                Spacer()
+
+                Toggle(
+                    "Enable Face ID",
+                    isOn: Binding(
+                        get: { viewModel.isFaceIDEnabled },
+                        set: { newValue in
+                            Task { await setFaceID(newValue) }
+                        }
+                    )
+                )
+                .labelsHidden()
+                .disabled(isUpdatingFaceID || AuthService.currentUser == nil)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray.opacity(0.25), lineWidth: 1)
+            )
+
+            if let message = faceIDMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundColor(viewModel.isFaceIDEnabled ? .green : .red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if viewModel.isFaceIDEnabled {
+                Button {
+                    viewModel.lockWorkly()
+                } label: {
+                    Label("Lock Workly with Face ID", systemImage: "lock.fill")
+                        .font(.footnote.bold())
+                        .foregroundColor(brandBlue)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(brandBlue.opacity(0.1))
+                        .cornerRadius(10)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func setFaceID(_ enabled: Bool) async {
+        faceIDMessage = nil
+        isUpdatingFaceID = true
+        defer { isUpdatingFaceID = false }
+
+        if enabled {
+            await viewModel.enableFaceID()
+            faceIDMessage = viewModel.isFaceIDEnabled
+                ? "Face ID enabled. You can now log in with Face ID."
+                : (viewModel.errorMessage ?? "Unable to enable Face ID.")
+        } else {
+            viewModel.disableFaceID()
+            faceIDMessage = "Face ID has been disabled."
+        }
+    }
 
     private func profileRow(title: String) -> some View {
         HStack {
@@ -136,11 +244,4 @@ struct WorkerProfileView: View {
                 .stroke(Color.gray.opacity(0.25), lineWidth: 1)
         )
     }
-}
-
-#Preview {
-    NavigationStack {
-        WorkerProfileView()
-    }
-    .environmentObject(LoginViewModel())
 }
