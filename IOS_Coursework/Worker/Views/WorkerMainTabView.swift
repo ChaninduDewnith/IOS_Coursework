@@ -27,7 +27,10 @@ struct WorkerMainTabView: View {
                 }
                
 
-            Text("")
+            
+            NavigationStack {
+                WorkerJobsView()
+            }
                 .tabItem {
                     Label("Jobs", systemImage: "calendar")
                 }
