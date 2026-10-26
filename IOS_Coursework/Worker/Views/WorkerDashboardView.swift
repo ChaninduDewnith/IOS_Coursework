@@ -72,6 +72,11 @@ struct WorkerDashboardView: View {
                     .labelsHidden()
                     .disabled(locationVM.isUpdating)
                     .tint(blue)
+                    
+                    NavigationLink {
+                        NotificationsView()
+                    } label: {
+                        Image(systemName: "bell.fill")}
                 }
 
             
