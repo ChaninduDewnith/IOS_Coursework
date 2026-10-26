@@ -74,7 +74,7 @@ struct ProfileView: View {
                 }
 
                 NavigationLink {
-                    Text("Booking History coming soon")
+                    BookingHistoryView()
                 } label: {
                     profileRow(title: "Booking History")
                 }

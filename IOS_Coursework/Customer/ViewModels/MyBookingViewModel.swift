@@ -3,16 +3,12 @@
 //  IOS_Coursework
 //
 
-//
+
 
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import Combine
-
-
-
-
 
 struct BookingItem: Identifiable, Equatable {
     let id: String
@@ -24,6 +20,9 @@ struct BookingItem: Identifiable, Equatable {
     let address: String
     let issue: String
     let hourlyRate: Double
+    let customerName: String
+    let reviewed: Bool
+    let reviewRating: Double?
     let status: String
 
     init(id: String, data: [String: Any]) {
@@ -37,6 +36,9 @@ struct BookingItem: Identifiable, Equatable {
         self.issue = data["issue"] as? String ?? ""
         self.hourlyRate = (data["hourlyRate"] as? NSNumber)?.doubleValue ?? 0
         self.status = data["status"] as? String ?? "pending"
+        self.customerName = data["customerName"] as? String ?? ""
+        self.reviewed = data["reviewed"] as? Bool ?? false
+        self.reviewRating = (data["reviewRating"] as? NSNumber)?.doubleValue
     }
 
     var isPending: Bool { status == "pending" }
@@ -82,7 +84,7 @@ final class MyBookingsViewModel: ObservableObject {
             filtered = allBookings.filter { $0.isConfirmed }
         }
 
-        
+      
         return filtered.sorted {
             ($0.scheduledAt ?? .distantFuture) < ($1.scheduledAt ?? .distantFuture)
         }
@@ -98,7 +100,7 @@ final class MyBookingsViewModel: ObservableObject {
 
     
 
-  
+    
     func start() {
         guard listener == nil else { return }
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -131,8 +133,9 @@ final class MyBookingsViewModel: ObservableObject {
         listener = nil
     }
 
-  
+    
 
+    
     func cancel(_ booking: BookingItem) async {
         bookingToCancel = nil
 
@@ -150,9 +153,9 @@ final class MyBookingsViewModel: ObservableObject {
         }
     }
 
-    
+  
 
-    
+ 
     func dateText(_ booking: BookingItem) -> String {
         guard let date = booking.scheduledAt else { return "--" }
         let formatter = DateFormatter()
