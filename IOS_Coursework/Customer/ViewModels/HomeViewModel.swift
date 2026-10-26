@@ -10,6 +10,7 @@ import FirebaseFirestore
 import Combine
 
 
+
 @MainActor
 final class HomeViewModel: ObservableObject {
 
@@ -23,19 +24,19 @@ final class HomeViewModel: ObservableObject {
         fullName.split(separator: " ").first.map(String.init) ?? fullName
     }
 
-    
+   
 
     func start() {
         guard listener == nil, let uid = Auth.auth().currentUser?.uid else { return }
 
-       
+      
         Task {
             if let data = try? await db.collection("users").document(uid).getDocument().data() {
                 fullName = data["fullName"] as? String ?? ""
             }
         }
 
-      
+        
         listener = db.collection("bookings")
             .whereField("customerId", isEqualTo: uid)
             .addSnapshotListener { [weak self] snapshot, _ in
@@ -68,9 +69,22 @@ final class HomeViewModel: ObservableObject {
         upcoming = candidates.sorted {
             ($0.scheduledAt ?? .distantFuture) < ($1.scheduledAt ?? .distantFuture)
         }.first
+
+       
+        WidgetStore.save(WidgetSnapshot(
+            isSignedIn: true,
+            role: "customer",
+            name: firstName,
+            nextService: upcoming?.service,
+            nextPerson: upcoming?.workerName,
+            nextDate: upcoming?.scheduledAt,
+            nextStatus: upcoming?.status
+        ))
     }
 
-    
+   
+
+  
     func timeText(_ booking: BookingItem) -> String {
         guard let date = booking.scheduledAt else { return "--" }
 

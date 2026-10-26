@@ -1,6 +1,9 @@
 import Foundation
 import Combine
 import FirebaseAuth
+import FirebaseFirestore
+
+
 
 @MainActor
 final class LoginViewModel: ObservableObject {
@@ -11,7 +14,7 @@ final class LoginViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var infoMessage: String?
 
- 
+
 
     func login(email: String, password: String) async {
         let cleanEmail = email
@@ -48,7 +51,7 @@ final class LoginViewModel: ObservableObject {
         }
     }
 
-
+   
 
     func restoreSession() async {
         guard let user = AuthService.currentUser else { return }
@@ -64,7 +67,7 @@ final class LoginViewModel: ObservableObject {
         }
     }
 
-
+  
 
     func resetPassword(email: String) async {
         let cleanEmail = email
@@ -94,6 +97,7 @@ final class LoginViewModel: ObservableObject {
 
     func logout() {
         try? AuthService.logout()
+        WidgetStore.clear()     
         role = nil
         isLoggedIn = false
     }

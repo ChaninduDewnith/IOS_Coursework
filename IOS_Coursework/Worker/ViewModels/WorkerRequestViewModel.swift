@@ -24,6 +24,7 @@ struct WorkerRequest: Identifiable, Equatable {
     let issue: String
     let scheduledAt: Date?
     let status: String
+    
     let latitude: Double?
     let longitude: Double?
     let completedAt: Date?
@@ -64,6 +65,24 @@ final class WorkerRequestsViewModel: ObservableObject {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
+   
+    private func updateWidget() {
+        let next = activeAndUpcomingJobs.first
+        WidgetStore.save(WidgetSnapshot(
+            isSignedIn: true,
+            role: "worker",
+            name: workerName,
+            nextService: next?.service,
+            nextPerson: next?.customerName,
+            nextDate: next?.scheduledAt,
+            nextStatus: next?.status,
+            pendingCount: pendingCount,
+            upcomingCount: upcomingCount
+        ))
+    }
+
+    
+
     
     var newRequests: [WorkerRequest] {
         all.filter { $0.status == "pending" }
@@ -81,6 +100,8 @@ final class WorkerRequestsViewModel: ObservableObject {
     }
 
     
+
+    
     var activeAndUpcomingJobs: [WorkerRequest] {
         all.filter { $0.status == "accepted" || $0.status == "in_progress" }
             .sorted {
@@ -91,7 +112,7 @@ final class WorkerRequestsViewModel: ObservableObject {
             }
     }
 
-    
+   
     var completedJobs: [WorkerRequest] {
         all.filter { $0.status == "completed" }
             .sorted {
@@ -100,14 +121,14 @@ final class WorkerRequestsViewModel: ObservableObject {
             }
     }
 
-   
+ 
     func isActive(_ job: WorkerRequest) -> Bool {
         if job.status == "in_progress" { return true }
         guard job.status == "accepted", let date = job.scheduledAt else { return false }
         return Calendar.current.isDateInToday(date)
     }
 
-    
+ 
 
     func start() {
         guard listener == nil else { return }
@@ -129,13 +150,14 @@ final class WorkerRequestsViewModel: ObservableObject {
                     self.isLoading = false
                     if let items {
                         self.all = items
+                        self.updateWidget()
                     } else if let message {
                         self.show("Could not load requests: \(message)")
                     }
                 }
             }
 
-       
+     
         Task {
             if let data = try? await db.collection("users").document(uid).getDocument().data() {
                 workerName = data["fullName"] as? String ?? ""
@@ -150,6 +172,8 @@ final class WorkerRequestsViewModel: ObservableObject {
         listener?.remove()
         listener = nil
     }
+
+    
 
     
     func respond(to request: WorkerRequest, accept: Bool) async -> Bool {
@@ -187,7 +211,7 @@ final class WorkerRequestsViewModel: ObservableObject {
         }
     }
 
-  
+   
     func scheduleText(_ request: WorkerRequest) -> String {
         guard let date = request.scheduledAt else { return "--" }
 
