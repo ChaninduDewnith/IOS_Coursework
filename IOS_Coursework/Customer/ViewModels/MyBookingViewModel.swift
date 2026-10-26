@@ -10,9 +10,6 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
-
-
-
 struct BookingItem: Identifiable, Equatable {
     let id: String
     let workerId: String
