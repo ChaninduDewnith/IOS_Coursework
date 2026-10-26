@@ -19,7 +19,9 @@ struct WorkerMainTabView: View {
                
 
     
-            Text("")
+            NavigationStack {
+                WorkerRequestsView()
+            }
                 .tabItem {
                     Label("Requests", systemImage: "list.bullet")
                 }
