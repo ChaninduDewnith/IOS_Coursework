@@ -19,13 +19,18 @@ struct WorkerMainTabView: View {
                
 
     
-            Text("")
+            NavigationStack {
+                WorkerRequestsView()
+            }
                 .tabItem {
                     Label("Requests", systemImage: "list.bullet")
                 }
                
 
-            Text("")
+            
+            NavigationStack {
+                WorkerJobsView()
+            }
                 .tabItem {
                     Label("Jobs", systemImage: "calendar")
                 }
