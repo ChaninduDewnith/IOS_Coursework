@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E257BA8D308F113D00EAF351 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E257BA8C308F113D00EAF351 /* WidgetKit.framework */; };
+		E257BA8F308F113D00EAF351 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E257BA8E308F113D00EAF351 /* SwiftUI.framework */; };
+		E257BAA0308F113F00EAF351 /* WorklyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E257BA8B308F113D00EAF351 /* WorklyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E2CB6A7B307E146700AE4126 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7A307E146700AE4126 /* FirebaseAnalytics */; };
 		E2CB6A7D307E146700AE4126 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7C307E146700AE4126 /* FirebaseAnalyticsCore */; };
 		E2CB6A7F307E146700AE4126 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7E307E146700AE4126 /* FirebaseAnalyticsIdentitySupport */; };
@@ -16,20 +19,85 @@
 		E2CB6A88307E197F00AE4126 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A87307E197F00AE4126 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		E257BA9E308F113F00EAF351 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2DB572D3070D3600068107C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E257BA8A308F113D00EAF351;
+			remoteInfo = WorklyWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E257BAA5308F113F00EAF351 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E257BAA0308F113F00EAF351 /* WorklyWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		E257BA8B308F113D00EAF351 /* WorklyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorklyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E257BA8C308F113D00EAF351 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		E257BA8E308F113D00EAF351 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		E257BAAB308F16DD00EAF351 /* WorklyWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorklyWidgetExtension.entitlements; sourceTree = "<group>"; };
 		E2CB6A80307E15C300AE4126 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		E2DB57353070D3600068107C /* IOS_Coursework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS_Coursework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E257BAA1308F113F00EAF351 /* Exceptions for "WorklyWidget" folder in "WorklyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E257BA8A308F113D00EAF351 /* WorklyWidgetExtension */;
+		};
+		E257BAAA308F156200EAF351 /* Exceptions for "IOS_Coursework" folder in "WorklyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WidgetShared.swift,
+			);
+			target = E257BA8A308F113D00EAF351 /* WorklyWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E257BA90308F113D00EAF351 /* WorklyWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E257BAA1308F113F00EAF351 /* Exceptions for "WorklyWidget" folder in "WorklyWidgetExtension" target */,
+			);
+			path = WorklyWidget;
+			sourceTree = "<group>";
+		};
 		E2DB57373070D3600068107C /* IOS_Coursework */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E257BAAA308F156200EAF351 /* Exceptions for "IOS_Coursework" folder in "WorklyWidgetExtension" target */,
+			);
 			path = IOS_Coursework;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E257BA88308F113D00EAF351 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E257BA8F308F113D00EAF351 /* SwiftUI.framework in Frameworks */,
+				E257BA8D308F113D00EAF351 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E2DB57323070D3600068107C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -49,6 +117,8 @@
 		E2CB6A82307E18F800AE4126 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E257BA8C308F113D00EAF351 /* WidgetKit.framework */,
+				E257BA8E308F113D00EAF351 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -56,7 +126,9 @@
 		E2DB572C3070D3600068107C = {
 			isa = PBXGroup;
 			children = (
+				E257BAAB308F16DD00EAF351 /* WorklyWidgetExtension.entitlements */,
 				E2DB57373070D3600068107C /* IOS_Coursework */,
+				E257BA90308F113D00EAF351 /* WorklyWidget */,
 				E2DB57363070D3600068107C /* Products */,
 				E2CB6A80307E15C300AE4126 /* GoogleService-Info.plist */,
 				E2CB6A82307E18F800AE4126 /* Frameworks */,
@@ -67,6 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				E2DB57353070D3600068107C /* IOS_Coursework.app */,
+				E257BA8B308F113D00EAF351 /* WorklyWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -74,6 +147,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E257BA8A308F113D00EAF351 /* WorklyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E257BAA2308F113F00EAF351 /* Build configuration list for PBXNativeTarget "WorklyWidgetExtension" */;
+			buildPhases = (
+				E257BA87308F113D00EAF351 /* Sources */,
+				E257BA88308F113D00EAF351 /* Frameworks */,
+				E257BA89308F113D00EAF351 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E257BA90308F113D00EAF351 /* WorklyWidget */,
+			);
+			name = WorklyWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = WorklyWidgetExtension;
+			productReference = E257BA8B308F113D00EAF351 /* WorklyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		E2DB57343070D3600068107C /* IOS_Coursework */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E2DB57403070D3610068107C /* Build configuration list for PBXNativeTarget "IOS_Coursework" */;
@@ -81,10 +176,12 @@
 				E2DB57313070D3600068107C /* Sources */,
 				E2DB57323070D3600068107C /* Frameworks */,
 				E2DB57333070D3600068107C /* Resources */,
+				E257BAA5308F113F00EAF351 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				E257BA9F308F113F00EAF351 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E2DB57373070D3600068107C /* IOS_Coursework */,
@@ -112,6 +209,9 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					E257BA8A308F113D00EAF351 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					E2DB57343070D3600068107C = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -135,11 +235,19 @@
 			projectRoot = "";
 			targets = (
 				E2DB57343070D3600068107C /* IOS_Coursework */,
+				E257BA8A308F113D00EAF351 /* WorklyWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E257BA89308F113D00EAF351 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E2DB57333070D3600068107C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -151,6 +259,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E257BA87308F113D00EAF351 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E2DB57313070D3600068107C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,7 +275,77 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		E257BA9F308F113F00EAF351 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E257BA8A308F113D00EAF351 /* WorklyWidgetExtension */;
+			targetProxy = E257BA9E308F113F00EAF351 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		E257BAA3308F113F00EAF351 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorklyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorklyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorklyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nibm.IOS-Coursework.WorklyWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E257BAA4308F113F00EAF351 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorklyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorklyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorklyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nibm.IOS-Coursework.WorklyWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		E2DB573E3070D3610068107C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -285,8 +470,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IOS_Coursework/IOS_Coursework.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock the app.";
@@ -318,8 +505,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IOS_Coursework/IOS_Coursework.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock the app.";
@@ -349,6 +538,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E257BAA2308F113F00EAF351 /* Build configuration list for PBXNativeTarget "WorklyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E257BAA3308F113F00EAF351 /* Debug */,
+				E257BAA4308F113F00EAF351 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E2DB57303070D3600068107C /* Build configuration list for PBXProject "IOS_Coursework" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

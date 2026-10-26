@@ -10,7 +10,6 @@ import CoreLocation
 import FirebaseFirestore
 import Combine
 
-
 @MainActor
 final class SearchViewModel: ObservableObject {
 
@@ -21,11 +20,13 @@ final class SearchViewModel: ObservableObject {
         var id: String { rawValue }
     }
 
-  
+   
     static let workerRole = "worker"
 
+    
     @Published var searchText: String
     @Published var filter: Filter = .nearMe
+    @Published var selectedCategory = ""
     @Published private(set) var allWorkers: [WorkerResult] = []
     @Published private(set) var userLocation: CLLocation?
     @Published var isLoading = false
@@ -39,9 +40,9 @@ final class SearchViewModel: ObservableObject {
         self.searchText = searchText
     }
 
-    
+
     var results: [WorkerResult] {
-    
+      
         var list = allWorkers.filter { $0.isOnline }.map { worker -> WorkerResult in
             var copy = worker
             if let user = userLocation {
@@ -52,7 +53,7 @@ final class SearchViewModel: ObservableObject {
             return copy
         }
 
-       
+        
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if !query.isEmpty {
             list = list.filter { worker in
@@ -60,6 +61,11 @@ final class SearchViewModel: ObservableObject {
                 return (!category.isEmpty && (category.contains(query) || query.contains(category)))
                     || worker.name.lowercased().contains(query)
             }
+        }
+
+        
+        if !selectedCategory.isEmpty {
+            list = list.filter { $0.category.caseInsensitiveCompare(selectedCategory) == .orderedSame }
         }
 
         
@@ -85,7 +91,7 @@ final class SearchViewModel: ObservableObject {
         return text.isEmpty ? "Workers Near Me" : "\(text.capitalized)s Near Me"
     }
 
-    
+   
     func load() async {
         isLoading = true
         defer { isLoading = false }
@@ -105,7 +111,7 @@ final class SearchViewModel: ObservableObject {
             return
         }
 
-        
+     
         userLocation = try? await locationManager.currentLocation()
     }
 }

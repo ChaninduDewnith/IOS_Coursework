@@ -12,20 +12,26 @@ import Combine
 
 
 
+
+
+
 struct WorkerRequest: Identifiable, Equatable {
     let id: String
+    let customerId: String
     let customerName: String
     let service: String
     let address: String
     let issue: String
     let scheduledAt: Date?
     let status: String
+    
     let latitude: Double?
     let longitude: Double?
     let completedAt: Date?
 
     init(id: String, data: [String: Any]) {
         self.id = id
+        self.customerId = data["customerId"] as? String ?? ""
         self.customerName = data["customerName"] as? String ?? "Customer"
         self.service = data["serviceCategory"] as? String ?? ""
         self.address = data["address"] as? String ?? ""
@@ -60,6 +66,24 @@ final class WorkerRequestsViewModel: ObservableObject {
     private var listener: ListenerRegistration?
 
    
+    private func updateWidget() {
+        let next = activeAndUpcomingJobs.first
+        WidgetStore.save(WidgetSnapshot(
+            isSignedIn: true,
+            role: "worker",
+            name: workerName,
+            nextService: next?.service,
+            nextPerson: next?.customerName,
+            nextDate: next?.scheduledAt,
+            nextStatus: next?.status,
+            pendingCount: pendingCount,
+            upcomingCount: upcomingCount
+        ))
+    }
+
+    
+
+    
     var newRequests: [WorkerRequest] {
         all.filter { $0.status == "pending" }
             .sorted { ($0.scheduledAt ?? .distantFuture) < ($1.scheduledAt ?? .distantFuture) }
@@ -75,7 +99,7 @@ final class WorkerRequestsViewModel: ObservableObject {
         all.filter { $0.status == "completed" }.count
     }
 
-  
+    
 
     
     var activeAndUpcomingJobs: [WorkerRequest] {
@@ -88,7 +112,7 @@ final class WorkerRequestsViewModel: ObservableObject {
             }
     }
 
-    
+   
     var completedJobs: [WorkerRequest] {
         all.filter { $0.status == "completed" }
             .sorted {
@@ -97,14 +121,14 @@ final class WorkerRequestsViewModel: ObservableObject {
             }
     }
 
-  
+ 
     func isActive(_ job: WorkerRequest) -> Bool {
         if job.status == "in_progress" { return true }
         guard job.status == "accepted", let date = job.scheduledAt else { return false }
         return Calendar.current.isDateInToday(date)
     }
 
-    
+ 
 
     func start() {
         guard listener == nil else { return }
@@ -126,13 +150,14 @@ final class WorkerRequestsViewModel: ObservableObject {
                     self.isLoading = false
                     if let items {
                         self.all = items
+                        self.updateWidget()
                     } else if let message {
                         self.show("Could not load requests: \(message)")
                     }
                 }
             }
 
-        
+     
         Task {
             if let data = try? await db.collection("users").document(uid).getDocument().data() {
                 workerName = data["fullName"] as? String ?? ""
@@ -148,7 +173,9 @@ final class WorkerRequestsViewModel: ObservableObject {
         listener = nil
     }
 
-  
+    
+
+    
     func respond(to request: WorkerRequest, accept: Bool) async -> Bool {
         isResponding = true
         respondingID = request.id
@@ -162,6 +189,21 @@ final class WorkerRequestsViewModel: ObservableObject {
 
         do {
             try await db.collection("bookings").document(request.id).updateData(update)
+
+            let who = workerName.isEmpty ? "Your worker" : workerName
+            if accept {
+                await NotificationService.send(
+                    to: request.customerId, type: "booking_accepted",
+                    title: "Booking Accepted",
+                    message: "\(who) has accepted your request for \(scheduleText(request)).",
+                    bookingID: request.id)
+            } else {
+                await NotificationService.send(
+                    to: request.customerId, type: "booking_declined",
+                    title: "Booking Declined",
+                    message: "\(who) couldn't take your \(request.service.lowercased()) request for \(scheduleText(request)).",
+                    bookingID: request.id)
+            }
             return true
         } catch {
             show("Could not update the request: \(error.localizedDescription)")
@@ -169,7 +211,7 @@ final class WorkerRequestsViewModel: ObservableObject {
         }
     }
 
-    
+   
     func scheduleText(_ request: WorkerRequest) -> String {
         guard let date = request.scheduledAt else { return "--" }
 
@@ -188,7 +230,7 @@ final class WorkerRequestsViewModel: ObservableObject {
         return "\(day.string(from: date)), \(timeText)"
     }
 
-  
+    
 
     func startJob(_ job: WorkerRequest) async -> Bool {
         await updateStatus(job, to: "in_progress", timeField: "startedAt")
@@ -211,6 +253,21 @@ final class WorkerRequestsViewModel: ObservableObject {
                 "status": status,
                 timeField: FieldValue.serverTimestamp()
             ])
+
+            let who = workerName.isEmpty ? "Your worker" : workerName
+            if status == "in_progress" {
+                await NotificationService.send(
+                    to: job.customerId, type: "job_started",
+                    title: "Job Started",
+                    message: "\(who) has started your \(job.service.lowercased()) job.",
+                    bookingID: job.id)
+            } else if status == "completed" {
+                await NotificationService.send(
+                    to: job.customerId, type: "job_completed",
+                    title: "Job Completed",
+                    message: "\(who) marked your \(job.service.lowercased()) job as completed. Tap History to rate it.",
+                    bookingID: job.id)
+            }
             return true
         } catch {
             show("Could not update the job: \(error.localizedDescription)")
@@ -244,7 +301,7 @@ final class WorkerRequestsViewModel: ObservableObject {
         return day.string(from: date)
     }
 
-    
+   
     func distanceText(_ request: WorkerRequest) -> String? {
         guard let latitude = request.latitude,
               let longitude = request.longitude,

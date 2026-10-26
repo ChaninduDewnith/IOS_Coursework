@@ -11,6 +11,8 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
+
+
 struct TimeSlot: Identifiable, Hashable {
     let hour: Int
     let minute: Int
@@ -30,7 +32,7 @@ final class BookingRequestViewModel: ObservableObject {
 
     let workerID: String
 
-    
+   
     @Published private(set) var workerName = ""
     @Published private(set) var workerCategory = ""
     @Published private(set) var hourlyRate: Double?
@@ -38,7 +40,7 @@ final class BookingRequestViewModel: ObservableObject {
     private var startMinutes = 8 * 60
     private var endMinutes = 18 * 60
 
-   
+  
     @Published var selectedDate: Date = BookingRequestViewModel.tomorrow {
         didSet { dropSlotIfUnavailable() }
     }
@@ -46,7 +48,7 @@ final class BookingRequestViewModel: ObservableObject {
     @Published var address = ""
     @Published var issue = ""
 
-    
+   
     @Published var isLoading = false
     @Published var isSaving = false
     @Published var isLocating = false
@@ -75,7 +77,7 @@ final class BookingRequestViewModel: ObservableObject {
         return Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
     }
 
-    
+   
 
     var hourlyRateText: String? {
         guard let rate = hourlyRate else { return nil }
@@ -84,7 +86,7 @@ final class BookingRequestViewModel: ObservableObject {
             : String(format: "Rs.%.2f/hr", rate)
     }
 
-
+   
     var dateText: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
@@ -99,10 +101,11 @@ final class BookingRequestViewModel: ObservableObject {
         return "\(weekday.string(from: selectedDate)), \(base)"
     }
 
-   
+    
+
     private static let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-    
+ 
     var isWorkingDay: Bool {
         guard !workingDays.isEmpty else { return true }
         let weekday = Calendar.current.component(.weekday, from: selectedDate) - 1
@@ -115,7 +118,7 @@ final class BookingRequestViewModel: ObservableObject {
         return formatter.string(from: selectedDate)
     }
 
- 
+
     var availableSlots: [TimeSlot] {
         guard isWorkingDay else { return [] }
 
@@ -140,13 +143,19 @@ final class BookingRequestViewModel: ObservableObject {
         }
     }
 
-
+ 
 
     func load() async {
+        
+        guard !workerID.isEmpty else {
+            show("No worker selected.")
+            return
+        }
+
         isLoading = true
         defer { isLoading = false }
 
-        
+      
         do {
             let snapshot = try await db.collection("users").document(workerID).getDocument()
             guard let data = snapshot.data() else {
@@ -168,7 +177,7 @@ final class BookingRequestViewModel: ObservableObject {
             return
         }
 
-     
+        
         if let uid = Auth.auth().currentUser?.uid,
            let data = try? await db.collection("users").document(uid).getDocument().data() {
             customerName = data["fullName"] as? String ?? ""
@@ -185,7 +194,7 @@ final class BookingRequestViewModel: ObservableObject {
         return hour * 60 + minute
     }
 
-
+    
 
     func useCurrentLocation() async {
         isLocating = true
@@ -215,9 +224,7 @@ final class BookingRequestViewModel: ObservableObject {
         }
     }
 
-  
 
-    
     func submit() async -> Bool {
         guard let uid = Auth.auth().currentUser?.uid else {
             show("You must be logged in to request a service.")
@@ -277,7 +284,7 @@ final class BookingRequestViewModel: ObservableObject {
             "createdAt": FieldValue.serverTimestamp()
         ]
 
-        
+      
         if let coordinate, trimmedAddress == coordinateAddress {
             data["serviceLocation"] = GeoPoint(latitude: coordinate.latitude,
                                                longitude: coordinate.longitude)
@@ -286,6 +293,16 @@ final class BookingRequestViewModel: ObservableObject {
         do {
             let ref = try await db.collection("bookings").addDocument(data: data)
             createdBookingID = ref.documentID
+
+            let day = DateFormatter()
+            day.locale = Locale(identifier: "en_US")
+            day.dateFormat = "MMM d"
+            await NotificationService.send(
+                to: workerID, type: "new_request",
+                title: "New Booking Opportunity",
+                message: "\(customerName) requested a \(workerCategory.lowercased()) job on \(day.string(from: scheduledAt)) at \(slot.label).",
+                bookingID: ref.documentID)
+
             showSuccess = true
             return true
         } catch {
