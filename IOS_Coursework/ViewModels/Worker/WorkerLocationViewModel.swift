@@ -21,7 +21,7 @@ final class WorkerLocationViewModel: ObservableObject {
     
     @Published var remoteIsAvailable: Bool?
 
-    private let locationManager = LocationManager()
+    private let locationManager = LocationService()
     private let db = Firestore.firestore()
 
 

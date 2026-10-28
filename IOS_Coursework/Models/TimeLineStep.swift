@@ -5,6 +5,7 @@
 //  Created by cobsccomp251p-055 on 2026-10-28.
 //
 
+import Foundation
 
 struct TimelineStep: Identifiable {
     enum Kind { case done, upcoming, failed }

@@ -25,7 +25,7 @@ enum LocationError: LocalizedError {
 
 
 @MainActor
-final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+final class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var location: CLLocation?
 

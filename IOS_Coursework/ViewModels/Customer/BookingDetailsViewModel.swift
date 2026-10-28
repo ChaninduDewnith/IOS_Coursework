@@ -8,14 +8,6 @@ import SwiftUI
 import FirebaseFirestore
 import Combine
 
-struct TimelineStep: Identifiable {
-    enum Kind { case done, upcoming, failed }
-
-    let id: Int
-    let title: String
-    let date: Date?
-    let kind: Kind
-}
 
 @MainActor
 final class BookingDetailsViewModel: ObservableObject {

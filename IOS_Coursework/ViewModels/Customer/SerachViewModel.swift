@@ -34,7 +34,7 @@ final class SearchViewModel: ObservableObject {
     @Published var showError = false
 
     private let db = Firestore.firestore()
-    private let locationManager = LocationManager()
+    private let locationManager = LocationService()
 
     init(searchText: String = "") {
         self.searchText = searchText

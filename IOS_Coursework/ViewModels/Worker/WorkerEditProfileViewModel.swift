@@ -3,15 +3,9 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
-import SwiftUI
-import FirebaseAuth
-import FirebaseFirestore
 
-struct ServiceCategory: Identifiable, Hashable {
-    let name: String
-    let icon: String
-    var id: String { name }
-}
+
+
 
 @MainActor
 final class EditProfileViewModel: ObservableObject {
@@ -23,7 +17,7 @@ final class EditProfileViewModel: ObservableObject {
     @Published var experience = "8+ Years Active Service"
     @Published var about = ""
 
-    
+   
     @Published var isLoading = false
     @Published var isSaving = false
     @Published var errorMessage: String?
@@ -48,7 +42,7 @@ final class EditProfileViewModel: ObservableObject {
 
     private let db = Firestore.firestore()
 
-    
+   
     private var userRef: DocumentReference? {
         guard let uid = Auth.auth().currentUser?.uid else { return nil }
         return db.collection("users").document(uid)
@@ -58,7 +52,7 @@ final class EditProfileViewModel: ObservableObject {
         String(format: "%.2f", Double(rate) ?? 0)
     }
 
-
+   
     func loadProfile() async {
         guard let ref = userRef else {
             show(error: "You must be logged in to edit your profile.")
@@ -82,7 +76,7 @@ final class EditProfileViewModel: ObservableObject {
                 experience = data["experience"] as? String ?? experience
                 about = data["about"] as? String ?? ""
             } else {
-            
+               
                 name = Auth.auth().currentUser?.displayName ?? ""
             }
         } catch {
@@ -90,7 +84,7 @@ final class EditProfileViewModel: ObservableObject {
         }
     }
 
-   
+    
     func saveProfile() async -> Bool {
         guard let ref = userRef else {
             show(error: "You must be logged in to save your profile.")
@@ -119,7 +113,7 @@ final class EditProfileViewModel: ObservableObject {
         ]
 
         do {
-         
+            
             try await ref.setData(data, merge: true)
             return true
         } catch {

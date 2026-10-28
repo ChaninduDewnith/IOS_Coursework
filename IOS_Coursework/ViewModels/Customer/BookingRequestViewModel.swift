@@ -13,19 +13,7 @@ import Combine
 
 
 
-struct TimeSlot: Identifiable, Hashable {
-    let hour: Int
-    let minute: Int
 
-    var id: Int { hour * 60 + minute }
-
-    
-    var label: String {
-        let suffix = hour >= 12 ? "PM" : "AM"
-        let hour12 = hour % 12 == 0 ? 12 : hour % 12
-        return String(format: "%02d:%02d %@", hour12, minute, suffix)
-    }
-}
 
 @MainActor
 final class BookingRequestViewModel: ObservableObject {
@@ -58,7 +46,7 @@ final class BookingRequestViewModel: ObservableObject {
     @Published private(set) var createdBookingID: String?
 
     private let db = Firestore.firestore()
-    private let locationManager = LocationManager()
+    private let locationManager = LocationService()
 
    
     private var customerName = ""
