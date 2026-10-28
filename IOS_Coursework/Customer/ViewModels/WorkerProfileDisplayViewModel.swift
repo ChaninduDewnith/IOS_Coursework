@@ -78,6 +78,8 @@ final class WorkerProfileDisplayViewModel: ObservableObject {
     @Published private(set) var reviews: [WorkerReview] = []
     @Published private(set) var isFavorite = false
     @Published private(set) var distanceMiles: Double?
+    /// Why the distance is "--" (shown in the Xcode console while you debug)
+    @Published private(set) var distanceIssue: String?
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showError = false
@@ -198,11 +200,41 @@ final class WorkerProfileDisplayViewModel: ObservableObject {
         isLoading = false
 
     
-        if let coordinate = profile?.coordinate,
-           let me = try? await locationManager.currentLocation() {
-            let worker = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            distanceMiles = me.distance(from: worker) / 1609.344
+        await loadDistance()
+    }
+
+    
+    private func loadDistance() async {
+        distanceIssue = nil
+
+        guard let coordinate = profile?.coordinate else {
+            distanceIssue = "This worker has no saved location. The worker must open the "
+                + "dashboard and turn Available on (or tap Share Location)."
+            print("Distance: \(distanceIssue ?? "")")
+            return
         }
+
+        var lastError: Error?
+
+     
+        for attempt in 1...2 {
+            do {
+                let me = try await locationManager.currentLocation()
+                let worker = CLLocation(latitude: coordinate.latitude,
+                                        longitude: coordinate.longitude)
+                distanceMiles = me.distance(from: worker) / 1609.344
+                return
+            } catch {
+                lastError = error
+                if error is LocationError { break }
+                if attempt == 1 { try? await Task.sleep(nanoseconds: 700_000_000) }
+            }
+        }
+
+        distanceIssue = (lastError as? LocalizedError)?.errorDescription
+            ?? lastError?.localizedDescription
+            ?? "Could not get your location."
+        print("Distance: \(distanceIssue ?? "")")
     }
 
     
@@ -226,7 +258,7 @@ final class WorkerProfileDisplayViewModel: ObservableObject {
                 try await ref.delete()
             }
         } catch {
-            isFavorite = !newValue 
+            isFavorite = !newValue
             show("Could not update favorites: \(error.localizedDescription)")
         }
     }

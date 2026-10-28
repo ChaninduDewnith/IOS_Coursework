@@ -5,6 +5,8 @@
 //
 
 
+
+
 import SwiftUI
 
 struct WorkerProfileDisplayView: View {
@@ -276,7 +278,8 @@ struct WorkerProfileDisplayView: View {
                     Text(viewModel.distanceText)
                         .fontWeight(.semibold)
                 ),
-                caption: "Distance"
+                // Says why when it can't be worked out (no worker location / location off)
+                caption: viewModel.distanceIssue == nil ? "Distance" : "Unavailable"
             )
 
             statDivider
