@@ -10,10 +10,10 @@
 		E257BA8D308F113D00EAF351 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E257BA8C308F113D00EAF351 /* WidgetKit.framework */; };
 		E257BA8F308F113D00EAF351 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E257BA8E308F113D00EAF351 /* SwiftUI.framework */; };
 		E257BAA0308F113F00EAF351 /* WorklyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E257BA8B308F113D00EAF351 /* WorklyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E2B31CD6308F4B2500815668 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2B31CD5308F4B2500815668 /* GoogleService-Info.plist */; };
 		E2CB6A7B307E146700AE4126 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7A307E146700AE4126 /* FirebaseAnalytics */; };
 		E2CB6A7D307E146700AE4126 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7C307E146700AE4126 /* FirebaseAnalyticsCore */; };
 		E2CB6A7F307E146700AE4126 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A7E307E146700AE4126 /* FirebaseAnalyticsIdentitySupport */; };
-		E2CB6A81307E15C300AE4126 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2CB6A80307E15C300AE4126 /* GoogleService-Info.plist */; };
 		E2CB6A84307E18F800AE4126 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A83307E18F800AE4126 /* FirebaseAuth */; };
 		E2CB6A86307E193700AE4126 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A85307E193700AE4126 /* FirebaseStorage */; };
 		E2CB6A88307E197F00AE4126 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E2CB6A87307E197F00AE4126 /* FirebaseFirestore */; };
@@ -48,7 +48,7 @@
 		E257BA8C308F113D00EAF351 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E257BA8E308F113D00EAF351 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E257BAAB308F16DD00EAF351 /* WorklyWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorklyWidgetExtension.entitlements; sourceTree = "<group>"; };
-		E2CB6A80307E15C300AE4126 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E2B31CD5308F4B2500815668 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		E2DB57353070D3600068107C /* IOS_Coursework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS_Coursework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -126,11 +126,11 @@
 		E2DB572C3070D3600068107C = {
 			isa = PBXGroup;
 			children = (
+				E2B31CD5308F4B2500815668 /* GoogleService-Info.plist */,
 				E257BAAB308F16DD00EAF351 /* WorklyWidgetExtension.entitlements */,
 				E2DB57373070D3600068107C /* IOS_Coursework */,
 				E257BA90308F113D00EAF351 /* WorklyWidget */,
 				E2DB57363070D3600068107C /* Products */,
-				E2CB6A80307E15C300AE4126 /* GoogleService-Info.plist */,
 				E2CB6A82307E18F800AE4126 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -252,7 +252,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E2CB6A81307E15C300AE4126 /* GoogleService-Info.plist in Resources */,
+				E2B31CD6308F4B2500815668 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
