@@ -1,34 +1,27 @@
-//
-//  HomeView.swift
-//  IOS_Coursework
-//
-//
-
-
 import SwiftUI
 
 private struct HomeCategory: Identifiable {
     let name: String
     let label: String
     let icon: String
+
     var id: String { name }
 }
 
 struct HomeView: View {
 
-   
-    @AppStorage("userName") var userName = ""
+    @AppStorage("userName") private var userName = ""
 
     @StateObject private var homeVM = HomeViewModel()
     @StateObject private var searchVM = SearchViewModel()
+    @StateObject private var notificationsVM = NotificationsViewModel()
 
-    
     @State private var chosenWorkerID: String?
     @State private var detailsBookingID: String?
 
     private let blue = Color(red: 0.23, green: 0.49, blue: 0.94)
+    private let fieldColor = Color(.secondarySystemBackground)
 
-   
     private let categories = [
         HomeCategory(name: "Electrician", label: "Electrician", icon: "bolt"),
         HomeCategory(name: "Plumber", label: "Plumber", icon: "drop"),
@@ -39,7 +32,10 @@ struct HomeView: View {
     ]
 
     private var displayName: String {
-        if !homeVM.firstName.isEmpty { return homeVM.firstName }
+        if !homeVM.firstName.isEmpty {
+            return homeVM.firstName
+        }
+
         return userName.isEmpty ? "there" : userName
     }
 
@@ -48,107 +44,163 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+        GeometryReader { geometry in
+            let isPad = geometry.size.width >= 700
 
-                header
-                searchField
-                upcomingCard
+            ScrollView {
+                VStack(alignment: .leading, spacing: isPad ? 28 : 20) {
 
-                Text("Popular Categories")
-                    .font(.headline)
+                    header
 
-                categoryGrid
+                    searchField
 
-                HStack {
-                    Text("Workers Near You")
-                        .font(.headline)
-                    Spacer()
-                    Button("See All") {
-                        searchVM.selectedCategory = ""
-                        searchVM.searchText = ""
+                    upcomingCard
+
+                    sectionTitle("Popular Categories")
+                    categoryGrid(isPad: isPad)
+
+                    HStack {
+                        sectionTitle("Workers Near You")
+
+                        Spacer()
+
+                        Button("See All") {
+                            searchVM.selectedCategory = ""
+                            searchVM.searchText = ""
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(blue)
                     }
-                    .font(.footnote)
-                    .foregroundColor(blue)
-                }
 
-                if shownWorkers.isEmpty {
-                    Text(searchVM.isLoading ? "Loading workers..." : "No workers found.")
-                        .foregroundColor(.gray)
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                    if shownWorkers.isEmpty {
+                        emptyWorkersView
+                    } else {
+                        LazyVGrid(
+                            columns: workerColumns(isPad: isPad),
+                            alignment: .leading,
+                            spacing: 16
+                        ) {
+                            ForEach(shownWorkers) { worker in
+                                workerCard(worker, isPad: isPad)
+                            }
+                        }
+                    }
                 }
-
-                ForEach(shownWorkers) { worker in
-                    workerCard(worker)
+                .padding(isPad ? 32 : 20)
+                .frame(maxWidth: 1200)
+                .frame(maxWidth: .infinity, alignment: .top)
+            }
+            .background(Color(uiColor: .systemBackground))
+            .refreshable {
+                await searchVM.load()
+            }
+            .task {
+                await searchVM.load()
+            }
+            .onAppear {
+                homeVM.start()
+                notificationsVM.start()
+            }
+            .onDisappear {
+                homeVM.stop()
+                notificationsVM.stop()
+            }
+            .workerFlow(selection: $chosenWorkerID)
+            .navigationDestination(
+                isPresented: Binding(
+                    get: { detailsBookingID != nil },
+                    set: { if !$0 { detailsBookingID = nil } }
+                )
+            ) {
+                if let id = detailsBookingID {
+                    BookingDetailsView(bookingID: id)
                 }
             }
-            .padding(20)
-        }
-        .refreshable { await searchVM.load() }
-        .task { await searchVM.load() }
-        .onAppear { homeVM.start() }
-        .onDisappear { homeVM.stop() }
-        .workerFlow(selection: $chosenWorkerID)
-        .navigationDestination(
-            isPresented: Binding(
-                get: { detailsBookingID != nil },
-                set: { if !$0 { detailsBookingID = nil } }
-            )
-        ) {
-            if let id = detailsBookingID {
-                BookingDetailsView(bookingID: id)
+            .alert("Error", isPresented: $searchVM.showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(searchVM.errorMessage ?? "Something went wrong.")
             }
-        }
-        .alert("Error", isPresented: $searchVM.showError) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(searchVM.errorMessage ?? "Something went wrong.")
         }
     }
 
-   
+    
+
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.title3)
+            .fontWeight(.bold)
+    }
+
+    
 
     private var header: some View {
-        HStack {
-            VStack(alignment: .leading) {
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("Welcome back")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
                 Text("Hello, \(displayName)")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
-            Spacer()
 
-            Text(String(displayName.prefix(1)).uppercased())
-                .fontWeight(.bold)
-                .foregroundColor(blue)
-                .frame(width: 40, height: 40)
-                .background(blue.opacity(0.15))
-                .clipShape(Circle())
-            
+            Spacer(minLength: 8)
+
             NavigationLink {
                 NotificationsView()
             } label: {
-                Image(systemName: "bell.fill")}
-            
+                Image(systemName: "bell.fill")
+                    .font(.title3)
+                    .foregroundColor(blue)
+                    .frame(width: 46, height: 46)
+                    .background(fieldColor)
+                    .clipShape(Circle())
+                    .overlay(alignment: .topTrailing) {
+                        if notificationsVM.unreadCount > 0 {
+                            Text(notificationsVM.unreadCount > 9 ? "9+" : "\(notificationsVM.unreadCount)")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 5)
+                                .frame(minWidth: 16, minHeight: 16)
+                                .background(Color.red)
+                                .clipShape(Capsule())
+                        }
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Notifications")
+
+            Text(String(displayName.prefix(1)).uppercased())
+                .font(.headline)
+                .foregroundColor(blue)
+                .frame(width: 46, height: 46)
+                .background(blue.opacity(0.15))
+                .clipShape(Circle())
         }
     }
 
+  
+
     private var searchField: some View {
-        HStack {
-            Image(systemName: "magnifyingglass").foregroundColor(.gray)
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+
             TextField("What service do you need?", text: $searchVM.searchText)
                 .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+
             Image(systemName: "slider.horizontal.3")
                 .foregroundColor(blue)
         }
-        .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-        )
+        .padding(15)
+        .background(fieldColor)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     
@@ -159,134 +211,246 @@ struct HomeView: View {
             Button {
                 detailsBookingID = booking.id
             } label: {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("UPCOMING BOOKING")
-                            .font(.system(size: 9, weight: .semibold))
-                            .padding(5)
-                            .background(Color.white.opacity(0.25))
-                            .cornerRadius(6)
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 6)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+
                         Spacer()
+
                         Text(homeVM.timeText(booking))
                             .font(.caption)
+                            .fontWeight(.medium)
                     }
+
                     Text(booking.workerName)
                         .font(.title3)
                         .fontWeight(.bold)
+
                     Text(booking.service)
-                        .font(.footnote)
+                        .font(.subheadline)
                 }
                 .foregroundColor(.white)
-                .padding(16)
+                .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(blue)
-                .cornerRadius(16)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            blue,
+                            blue.opacity(0.82)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18))
             }
             .buttonStyle(.plain)
         } else {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("No upcoming bookings")
-                    .fontWeight(.bold)
+            VStack(alignment: .leading, spacing: 8) {
+                Label("No upcoming bookings", systemImage: "calendar")
+                    .font(.headline)
+
                 Text("Choose a worker below to book a service.")
-                    .font(.footnote)
-                    .foregroundColor(.gray)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-            .padding(16)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-            )
+            .background(fieldColor.opacity(0.65))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 
    
 
-    private var categoryGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
-                  spacing: 16) {
+    private func categoryGrid(isPad: Bool) -> some View {
+        LazyVGrid(
+            columns: Array(
+                repeating: GridItem(.flexible(), spacing: 14),
+                count: isPad ? 6 : 3
+            ),
+            spacing: 16
+        ) {
             ForEach(categories) { category in
                 let isSelected = searchVM.selectedCategory == category.name
 
                 Button {
-                    searchVM.selectedCategory = isSelected ? "" : category.name
+                    searchVM.selectedCategory =
+                        isSelected ? "" : category.name
                 } label: {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 10) {
                         Image(systemName: category.icon)
-                            .font(.title3)
+                            .font(.title2)
                             .foregroundColor(isSelected ? .white : blue)
-                            .frame(width: 56, height: 56)
-                            .background(isSelected ? blue : Color(red: 0.96, green: 0.96, blue: 0.97))
+                            .frame(
+                                width: isPad ? 64 : 54,
+                                height: isPad ? 64 : 54
+                            )
+                            .background(
+                                isSelected ? blue : fieldColor
+                            )
                             .clipShape(Circle())
 
                         Text(category.label)
                             .font(.caption)
-                            .foregroundColor(.black)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
     }
 
-   
+  
 
-    private func workerCard(_ worker: WorkerResult) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func workerColumns(isPad: Bool) -> [GridItem] {
+        if isPad {
+            return [
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ]
+        } else {
+            return [
+                GridItem(.flexible())
+            ]
+        }
+    }
 
-            HStack {
-                Text(worker.name)
-                    .fontWeight(.bold)
-                Spacer()
-                Image(systemName: "star.fill")
-                    .foregroundColor(.yellow)
+    private var emptyWorkersView: some View {
+        VStack(spacing: 10) {
+            if searchVM.isLoading {
+                ProgressView()
+                Text("Loading workers...")
+                    .foregroundColor(.secondary)
+            } else {
+                Image(systemName: "person.2")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+
+                Text("No workers found.")
+                    .foregroundColor(.secondary)
+
+                Text("Try another service or search term.")
                     .font(.caption)
-                Text(worker.rating.map { String(format: "%.1f", $0) } ?? "New")
-                    .font(.caption)
-                    .fontWeight(.bold)
-            }
-
-            Text([worker.category, worker.experience].filter { !$0.isEmpty }.joined(separator: " · "))
-                .font(.footnote)
-                .foregroundColor(.gray)
-
-            HStack {
-                if let distance = worker.distanceMiles {
-                    Image(systemName: "mappin.and.ellipse")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text(String(format: "%.1f miles", distance))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-
-                Text(worker.statusText)
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(worker.isAvailableToday ? .green : .gray)
-                    .padding(5)
-                    .background(worker.isAvailableToday ? Color.green.opacity(0.15) : Color.gray.opacity(0.15))
-                    .cornerRadius(6)
-
-                Spacer()
-
-                Button {
-                    chosenWorkerID = worker.id
-                } label: {
-                    Text("Book Now")
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(blue)
-                        .cornerRadius(8)
-                }
+                    .foregroundColor(.secondary)
             }
         }
-        .padding(14)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-        )
+        .frame(maxWidth: .infinity)
+        .padding(30)
+        .background(fieldColor.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func workerCard(
+        _ worker: WorkerResult,
+        isPad: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 8) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(worker.name)
+                        .font(.headline)
+                        .lineLimit(2)
+
+                    Text(
+                        [worker.category, worker.experience]
+                            .filter { !$0.isEmpty }
+                            .joined(separator: " · ")
+                    )
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                }
+
+                Spacer(minLength: 4)
+
+                HStack(spacing: 4) {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+
+                    Text(
+                        worker.rating.map {
+                            String(format: "%.1f", $0)
+                        } ?? "New"
+                    )
+                    .fontWeight(.semibold)
+                }
+                .font(.caption)
+                .fixedSize()
+            }
+
+            HStack(spacing: 8) {
+                if let distance = worker.distanceMiles {
+                    Label(
+                        String(format: "%.1f miles", distance),
+                        systemImage: "mappin.and.ellipse"
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
+
+                Spacer(minLength: 4)
+
+                Text(worker.statusText)
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(
+                        worker.isAvailableToday ? .green : .secondary
+                    )
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(
+                        worker.isAvailableToday
+                            ? Color.green.opacity(0.12)
+                            : Color.gray.opacity(0.12)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
+            }
+
+            Button {
+                chosenWorkerID = worker.id
+            } label: {
+                HStack {
+                    Spacer()
+
+                    Text("Book Now")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+
+                    Image(systemName: "arrow.right")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+
+                    Spacer()
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 12)
+                .background(blue)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.18), lineWidth: 1)
+        }
     }
 }
 

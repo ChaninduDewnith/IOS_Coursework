@@ -43,6 +43,8 @@ struct BookingItem: Identifiable, Equatable {
 
     var isPending: Bool { status == "pending" }
     var isConfirmed: Bool { status == "accepted" }
+    /// The worker has started the job and it is not finished yet
+    var isOngoing: Bool { status == "in_progress" }
     var canCancel: Bool { isPending || isConfirmed }
 }
 
@@ -51,6 +53,7 @@ final class MyBookingsViewModel: ObservableObject {
 
     enum Tab: String, CaseIterable, Identifiable {
         case upcoming = "Upcoming"
+        case ongoing = "Ongoing"
         case pending = "Pending"
         case confirmed = "Confirmed"
         var id: String { rawValue }
@@ -78,6 +81,8 @@ final class MyBookingsViewModel: ObservableObject {
             filtered = allBookings.filter {
                 ($0.isPending || $0.isConfirmed) && ($0.scheduledAt ?? now) >= now
             }
+        case .ongoing:
+            filtered = allBookings.filter { $0.isOngoing }
         case .pending:
             filtered = allBookings.filter { $0.isPending }
         case .confirmed:
@@ -93,6 +98,7 @@ final class MyBookingsViewModel: ObservableObject {
     var emptyMessage: String {
         switch tab {
         case .upcoming: return "No upcoming bookings."
+        case .ongoing: return "No jobs in progress right now."
         case .pending: return "No bookings waiting for approval."
         case .confirmed: return "No confirmed bookings yet."
         }

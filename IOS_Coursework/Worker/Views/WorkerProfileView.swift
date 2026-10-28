@@ -7,6 +7,8 @@
 
 
 
+
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -15,17 +17,15 @@ struct WorkerProfileView: View {
 
     var showBackButton = false
 
-    @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var viewModel: LoginViewModel
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var viewModel: LoginViewModel
 
-    @AppStorage("userName") var userName = "Silva"
-    @AppStorage("userEmail") var userEmail = "silva@example.com"
-    @AppStorage("userPhone") var userPhone = "+94 706533150"
-    @AppStorage("notificationsOn") var notificationsOn = true
-    @AppStorage("locationOn") var locationOn = true
-
-    @State private var faceIDMessage: String?
-    @State private var isUpdatingFaceID = false
+    @AppStorage("userName") private var userName = ""
+    @AppStorage("userEmail") private var userEmail = ""
+    @AppStorage("userPhone") private var userPhone = ""
+    @AppStorage("userPhotoBase64") private var userPhotoBase64 = ""
+    @AppStorage("notificationsOn") private var notificationsOn = true
+    @AppStorage("locationOn") private var locationOn = true
 
     private let brandBlue = Color(red: 0.23, green: 0.49, blue: 0.94)
 
@@ -41,52 +41,41 @@ struct WorkerProfileView: View {
                             Image(systemName: "chevron.left")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                         }
                         Spacer()
                     }
                 }
 
-                Image(systemName: "person.fill")
-                    .font(.system(size: 36))
-                    .foregroundColor(.white)
-                    .frame(width: 80, height: 80)
-                    .background(brandBlue)
-                    .cornerRadius(20)
+                AvatarView(base64: userPhotoBase64, name: userName, size: 80)
 
                 VStack(spacing: 3) {
-                    Text(userName)
+                    Text(userName.isEmpty ? "Worker" : userName)
                         .font(.headline)
-                    Text(userEmail)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text(userPhone)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    if !userEmail.isEmpty {
+                        Text(userEmail)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    if !userPhone.isEmpty {
+                        Text(userPhone)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.bottom, 8)
 
                 NavigationLink {
-                    CustomerEditProfileView()
+                    WorkerEditProfileView()
                 } label: {
                     profileRow(title: "Edit Profile")
                 }
-                
-              
 
                 NavigationLink {
-                    FavoritesView()
+                    WorkerAvailabilityView()
                 } label: {
-                    profileRow(title: "Saved Favorites")
+                    profileRow(title: "Set Availability")
                 }
-
-                NavigationLink {
-                    BookingHistoryView()
-                } label: {
-                    profileRow(title: "Booking History")
-                }
-
-                faceIDSection
 
                 toggleRow(title: "Notification Settings", isOn: $notificationsOn)
                 toggleRow(title: "Location Services", isOn: $locationOn)
@@ -112,110 +101,36 @@ struct WorkerProfileView: View {
             .padding(20)
         }
         .navigationBarBackButtonHidden(true)
-        .task { await loadProfile() }
-    }
-
-
-    private func loadProfile() async {
-        guard let user = Auth.auth().currentUser else { return }
-        userEmail = user.email ?? userEmail
-
-        if let data = try? await Firestore.firestore()
-            .collection("users").document(user.uid).getDocument().data() {
-            if let name = data["fullName"] as? String, !name.isEmpty { userName = name }
-            if let phone = data["phone"] as? String, !phone.isEmpty { userPhone = phone }
-            if let email = data["email"] as? String, !email.isEmpty { userEmail = email }
+        .onAppear {
+            Task { await loadProfile() }
         }
     }
-
-    
 
    
-
-    private var faceIDSection: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 12) {
-                Image(systemName: "faceid")
-                    .font(.title2)
-                    .foregroundColor(brandBlue)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Enable Face ID")
-                        .font(.footnote)
-                        .fontWeight(.medium)
-
-                    Text("Log in to Workly with Face ID")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-
-                Spacer()
-
-                Toggle(
-                    "Enable Face ID",
-                    isOn: Binding(
-                        get: { viewModel.isFaceIDEnabled },
-                        set: { newValue in
-                            Task { await setFaceID(newValue) }
-                        }
-                    )
-                )
-                .labelsHidden()
-                .disabled(isUpdatingFaceID || AuthService.currentUser == nil)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-            )
-
-            if let message = faceIDMessage {
-                Text(message)
-                    .font(.caption)
-                    .foregroundColor(viewModel.isFaceIDEnabled ? .green : .red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            if viewModel.isFaceIDEnabled {
-                Button {
-                    viewModel.lockWorkly()
-                } label: {
-                    Label("Lock Workly with Face ID", systemImage: "lock.fill")
-                        .font(.footnote.bold())
-                        .foregroundColor(brandBlue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(brandBlue.opacity(0.1))
-                        .cornerRadius(10)
-                }
-            }
-        }
-    }
-
     @MainActor
-    private func setFaceID(_ enabled: Bool) async {
-        faceIDMessage = nil
-        isUpdatingFaceID = true
-        defer { isUpdatingFaceID = false }
+    private func loadProfile() async {
+        guard let user = Auth.auth().currentUser else { return }
 
-        if enabled {
-            await viewModel.enableFaceID()
-            faceIDMessage = viewModel.isFaceIDEnabled
-                ? "Face ID enabled. You can now log in with Face ID."
-                : (viewModel.errorMessage ?? "Unable to enable Face ID.")
-        } else {
-            viewModel.disableFaceID()
-            faceIDMessage = "Face ID has been disabled."
-        }
+        if let email = user.email { userEmail = email }
+
+        guard let data = try? await Firestore.firestore()
+            .collection("users").document(user.uid)
+            .getDocument().data() else { return }
+
+        if let name = data["fullName"] as? String, !name.isEmpty { userName = name }
+        if let phone = data["phone"] as? String, !phone.isEmpty { userPhone = phone }
+        if let email = data["email"] as? String, !email.isEmpty { userEmail = email }
+        userPhotoBase64 = data["photoBase64"] as? String ?? ""
     }
+
+   
 
     private func profileRow(title: String) -> some View {
         HStack {
             Text(title)
                 .font(.footnote)
                 .fontWeight(.medium)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption)
@@ -244,4 +159,11 @@ struct WorkerProfileView: View {
                 .stroke(Color.gray.opacity(0.25), lineWidth: 1)
         )
     }
+}
+
+#Preview {
+    NavigationStack {
+        WorkerProfileView()
+    }
+    .environmentObject(LoginViewModel())
 }

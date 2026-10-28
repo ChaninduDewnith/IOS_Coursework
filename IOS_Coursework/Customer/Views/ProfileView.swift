@@ -8,6 +8,7 @@
 
 
 
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -16,181 +17,279 @@ struct ProfileView: View {
 
     var showBackButton = false
 
-    @Environment(\.dismiss) var dismiss
-    @EnvironmentObject var viewModel: LoginViewModel
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var viewModel: LoginViewModel
 
-    @AppStorage("userName") var userName = "Silva"
-    @AppStorage("userEmail") var userEmail = "silva@example.com"
-    @AppStorage("userPhone") var userPhone = "+94 706533150"
-    @AppStorage("notificationsOn") var notificationsOn = true
-    @AppStorage("locationOn") var locationOn = true
+    @AppStorage("userName") private var userName = "Silva"
+    @AppStorage("userEmail") private var userEmail = "silva@example.com"
+    @AppStorage("userPhone") private var userPhone = "+94 706533150"
+    @AppStorage("notificationsOn") private var notificationsOn = true
+    @AppStorage("locationOn") private var locationOn = true
 
     @State private var faceIDMessage: String?
     @State private var isUpdatingFaceID = false
 
     private let brandBlue = Color(red: 0.23, green: 0.49, blue: 0.94)
+    private let fieldColor = Color(red: 0.96, green: 0.96, blue: 0.97)
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
+        GeometryReader { geometry in
+            let isPad = geometry.size.width >= 700
 
-                if showBackButton {
-                    HStack {
-                        Button {
-                            dismiss()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.black)
-                        }
-                        Spacer()
+            ScrollView {
+                VStack(spacing: isPad ? 28 : 18) {
+
+                    if showBackButton {
+                        backButton
+                    }
+
+                    if isPad {
+                        iPadProfileLayout
+                    } else {
+                        iPhoneProfileLayout
                     }
                 }
-
-                Image(systemName: "person.fill")
-                    .font(.system(size: 36))
-                    .foregroundColor(.white)
-                    .frame(width: 80, height: 80)
-                    .background(brandBlue)
-                    .cornerRadius(20)
-
-                VStack(spacing: 3) {
-                    Text(userName)
-                        .font(.headline)
-                    Text(userEmail)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text(userPhone)
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                .padding(.bottom, 8)
-
-                NavigationLink {
-                    CustomerEditProfileView()
-                } label: {
-                    profileRow(title: "Edit Profile")
-                }
-                
-              
-
-                NavigationLink {
-                    FavoritesView()
-                } label: {
-                    profileRow(title: "Saved Favorites")
-                }
-
-                NavigationLink {
-                    BookingHistoryView()
-                } label: {
-                    profileRow(title: "Booking History")
-                }
-
-                faceIDSection
-
-                toggleRow(title: "Notification Settings", isOn: $notificationsOn)
-                toggleRow(title: "Location Services", isOn: $locationOn)
-
-                Button {
-                    viewModel.logout()
-                } label: {
-                    Text("Logout")
-                        .font(.footnote)
-                        .fontWeight(.bold)
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                .padding(.top, 6)
+                .padding(isPad ? 32 : 20)
+                .frame(maxWidth: 1100)
+                .frame(maxWidth: .infinity)
             }
-            .padding(20)
+            .background(Color(uiColor: .systemBackground))
         }
         .navigationBarBackButtonHidden(true)
-        .task { await loadProfile() }
-    }
-
-    
-    private func loadProfile() async {
-        guard let user = Auth.auth().currentUser else { return }
-        userEmail = user.email ?? userEmail
-
-        if let data = try? await Firestore.firestore()
-            .collection("users").document(user.uid).getDocument().data() {
-            if let name = data["fullName"] as? String, !name.isEmpty { userName = name }
-            if let phone = data["phone"] as? String, !phone.isEmpty { userPhone = phone }
-            if let email = data["email"] as? String, !email.isEmpty { userEmail = email }
+        .task {
+            await loadProfile()
         }
     }
 
     
+
+    private var iPhoneProfileLayout: some View {
+        VStack(spacing: 18) {
+            profileHeader
+
+            profileLinks
+
+            settingsSection
+
+            faceIDSection
+
+            logoutButton
+        }
+        .frame(maxWidth: 520)
+        .frame(maxWidth: .infinity)
+    }
+
+    
+
+    private var iPadProfileLayout: some View {
+        VStack(spacing: 28) {
+            profileHeader
+
+            HStack(alignment: .top, spacing: 24) {
+
+                VStack(spacing: 16) {
+                    sectionHeading("Account")
+
+                    profileLinks
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+
+                VStack(spacing: 16) {
+                    sectionHeading("Security & Settings")
+
+                    settingsSection
+
+                    faceIDSection
+
+                    logoutButton
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+            }
+        }
+        .frame(maxWidth: 1000)
+        .frame(maxWidth: .infinity)
+    }
+
+
+
+    private var backButton: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Label("Back", systemImage: "chevron.left")
+                    .font(.headline)
+                    .foregroundColor(brandBlue)
+            }
+
+            Spacer()
+        }
+    }
+
+ 
+
+    private var profileHeader: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "person.fill")
+                .font(.system(size: 38))
+                .foregroundColor(.white)
+                .frame(width: 90, height: 90)
+                .background(brandBlue)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+
+            VStack(spacing: 5) {
+                Text(userName)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text(userEmail)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .textSelection(.enabled)
+
+                Text(userPhone)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+    }
+
+
+
+    private var profileLinks: some View {
+        VStack(spacing: 12) {
+            NavigationLink {
+                CustomerEditProfileView()
+            } label: {
+                profileRow(
+                    title: "Edit Profile",
+                    icon: "person.crop.circle"
+                )
+            }
+
+            NavigationLink {
+                FavoritesView()
+            } label: {
+                profileRow(
+                    title: "Saved Favorites",
+                    icon: "heart"
+                )
+            }
+
+            NavigationLink {
+                BookingHistoryView()
+            } label: {
+                profileRow(
+                    title: "Booking History",
+                    icon: "clock.arrow.circlepath"
+                )
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+  
+
+    private var settingsSection: some View {
+        VStack(spacing: 12) {
+            toggleRow(
+                title: "Notification Settings",
+                icon: "bell",
+                isOn: $notificationsOn
+            )
+
+            toggleRow(
+                title: "Location Services",
+                icon: "location",
+                isOn: $locationOn
+            )
+        }
+    }
 
     
 
     private var faceIDSection: some View {
-        VStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
+
             HStack(spacing: 12) {
                 Image(systemName: "faceid")
                     .font(.title2)
                     .foregroundColor(brandBlue)
+                    .frame(width: 34)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Enable Face ID")
-                        .font(.footnote)
-                        .fontWeight(.medium)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
 
-                    Text("Log in to Workly with Face ID")
+                    Text("Log in to Workly with Face ID.")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
                 Toggle(
                     "Enable Face ID",
                     isOn: Binding(
                         get: { viewModel.isFaceIDEnabled },
                         set: { newValue in
-                            Task { await setFaceID(newValue) }
+                            Task {
+                                await setFaceID(newValue)
+                            }
                         }
                     )
                 )
                 .labelsHidden()
-                .disabled(isUpdatingFaceID || AuthService.currentUser == nil)
+                .disabled(
+                    isUpdatingFaceID ||
+                    AuthService.currentUser == nil
+                )
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-            )
+
+            if isUpdatingFaceID {
+                ProgressView("Updating Face ID...")
+                    .font(.caption)
+            }
 
             if let message = faceIDMessage {
                 Text(message)
                     .font(.caption)
-                    .foregroundColor(viewModel.isFaceIDEnabled ? .green : .red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(
+                        viewModel.isFaceIDEnabled ? .green : .secondary
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if viewModel.isFaceIDEnabled {
                 Button {
                     viewModel.lockWorkly()
                 } label: {
-                    Label("Lock Workly with Face ID", systemImage: "lock.fill")
-                        .font(.footnote.bold())
-                        .foregroundColor(brandBlue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(brandBlue.opacity(0.1))
-                        .cornerRadius(10)
+                    Label(
+                        "Lock Workly with Face ID",
+                        systemImage: "lock.fill"
+                    )
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(brandBlue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(brandBlue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                .buttonStyle(.plain)
             }
+        }
+        .padding(16)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         }
     }
 
@@ -198,10 +297,14 @@ struct ProfileView: View {
     private func setFaceID(_ enabled: Bool) async {
         faceIDMessage = nil
         isUpdatingFaceID = true
-        defer { isUpdatingFaceID = false }
+
+        defer {
+            isUpdatingFaceID = false
+        }
 
         if enabled {
             await viewModel.enableFaceID()
+
             faceIDMessage = viewModel.isFaceIDEnabled
                 ? "Face ID enabled. You can now log in with Face ID."
                 : (viewModel.errorMessage ?? "Unable to enable Face ID.")
@@ -211,38 +314,142 @@ struct ProfileView: View {
         }
     }
 
-    private func profileRow(title: String) -> some View {
-        HStack {
-            Text(title)
-                .font(.footnote)
-                .fontWeight(.medium)
-                .foregroundColor(.black)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundColor(.gray)
+    
+
+    private var logoutButton: some View {
+        Button {
+            viewModel.logout()
+        } label: {
+            Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundColor(.red)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(Color.red.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.red.opacity(0.25), lineWidth: 1)
+                }
         }
-        .padding(14)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-        )
+        .buttonStyle(.plain)
     }
 
-    private func toggleRow(title: String, isOn: Binding<Bool>) -> some View {
-        HStack {
+    
+
+    private func sectionHeading(_ title: String) -> some View {
+        Text(title)
+            .font(.title3)
+            .fontWeight(.bold)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func profileRow(
+        title: String,
+        icon: String
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(brandBlue)
+                .frame(width: 28)
+
             Text(title)
-                .font(.footnote)
+                .font(.subheadline)
                 .fontWeight(.medium)
+                .foregroundColor(.primary)
+
             Spacer()
-            Toggle("", isOn: isOn)
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        }
+        .contentShape(Rectangle())
+    }
+
+    private func toggleRow(
+        title: String,
+        icon: String,
+        isOn: Binding<Bool>
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(brandBlue)
+                .frame(width: 28)
+
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            Spacer(minLength: 8)
+
+            Toggle(title, isOn: isOn)
                 .labelsHidden()
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.25), lineWidth: 1)
-        )
+        .padding(16)
+        .background(Color(uiColor: .secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        }
+    }
+
+    
+
+    @MainActor
+    private func loadProfile() async {
+        guard let user = Auth.auth().currentUser else {
+            return
+        }
+
+        userEmail = user.email ?? userEmail
+
+        do {
+            let snapshot = try await Firestore.firestore()
+                .collection("users")
+                .document(user.uid)
+                .getDocument()
+
+            guard let data = snapshot.data() else {
+                return
+            }
+
+            if let name = data["fullName"] as? String,
+               !name.isEmpty {
+                userName = name
+            }
+
+            if let phone = data["phone"] as? String,
+               !phone.isEmpty {
+                userPhone = phone
+            }
+
+            if let email = data["email"] as? String,
+               !email.isEmpty {
+                userEmail = email
+            }
+        } catch {
+            
+            print("Unable to load profile: \(error.localizedDescription)")
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        ProfileView()
+            .environmentObject(LoginViewModel())
     }
 }
