@@ -78,8 +78,7 @@ final class WorkerProfileDisplayViewModel: ObservableObject {
     @Published private(set) var reviews: [WorkerReview] = []
     @Published private(set) var isFavorite = false
     @Published private(set) var distanceMiles: Double?
-    /// Why the distance is "--" (shown in the Xcode console while you debug)
-    @Published private(set) var distanceIssue: String?
+  @Published private(set) var distanceIssue: String?
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var showError = false
