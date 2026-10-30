@@ -10,11 +10,12 @@ import SwiftUI
 struct WorkerMainTabView: View {
 
     private enum Tab: Int, CaseIterable, Identifiable {
-      
+
+        
         case dashboard = 0, requests = 1, jobs = 2, profile = 3
         case availability = 4, notifications = 5
 
-        
+     
         var id: Self { self }
 
         var title: String {
@@ -39,7 +40,7 @@ struct WorkerMainTabView: View {
             }
         }
 
-      
+         
         var inTabBar: Bool { rawValue <= Tab.profile.rawValue }
     }
 
@@ -68,6 +69,8 @@ struct WorkerMainTabView: View {
             }
         }
         .tint(blue)
+  
+        .onAppear { selectedRaw = 0 }
     }
 
    
@@ -84,7 +87,7 @@ struct WorkerMainTabView: View {
         }
     }
 
-   
+  
 
     private var sidebarLayout: some View {
         NavigationSplitView {
@@ -106,7 +109,7 @@ struct WorkerMainTabView: View {
         }
     }
 
-    
+  
 
     @ViewBuilder
     private func screen(for tab: Tab) -> some View {
@@ -128,7 +131,8 @@ struct WorkerMainTabView: View {
 }
 
 private extension View {
-   
+
+    
     func workerReadable(_ maxWidth: CGFloat = 720) -> some View {
         frame(maxWidth: maxWidth)
             .frame(maxWidth: .infinity)

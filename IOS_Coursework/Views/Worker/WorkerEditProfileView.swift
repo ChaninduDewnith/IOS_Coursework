@@ -31,23 +31,6 @@ struct WorkerEditProfileView: View {
                             .foregroundColor(.black)
                     }
 
-                    HStack(spacing: 14) {
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .frame(width: 64, height: 64)
-                            .foregroundColor(Color.gray.opacity(0.4))
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(viewModel.name)
-                                .fontWeight(.bold)
-
-                            Button("Change Photo") {
-                                showPhotoAlert = true
-                            }
-                            .font(.caption)
-                            .foregroundColor(blue)
-                        }
-                    }
                     .padding(.bottom, 6)
 
                     Text("SERVICE CATEGORY")

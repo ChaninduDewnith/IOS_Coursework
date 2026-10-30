@@ -48,6 +48,9 @@ struct WorkerDashboardView: View {
                     
                     header(isPad: isPad)
 
+                   
+                    ProfileIncompleteBanner()
+
                     
                     if isPad {
                         HStack(spacing: 16) {
@@ -458,4 +461,3 @@ struct WorkerDashboardView: View {
         WorkerDashboardView()
     }
 }
-

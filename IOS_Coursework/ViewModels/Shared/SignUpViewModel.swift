@@ -17,8 +17,20 @@ final class SignUpViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showSuccess = false
 
+    
+
+    static let nicLength = 12
+    static let phoneLength = 10
+
     private func trimmed(_ value: String) -> String {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+  
+    private func cleanedDigits(_ value: String) -> String? {
+        let cleaned = trimmed(value).filter { !$0.isWhitespace && $0 != "-" }
+        guard cleaned.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+        return cleaned
     }
 
     var isEmailValid: Bool {
@@ -26,19 +38,40 @@ final class SignUpViewModel: ObservableObject {
         return trimmed(email).range(of: pattern, options: .regularExpression) != nil
     }
 
+ 
+    var isNICValid: Bool {
+        guard let digits = cleanedDigits(nic) else { return false }
+        return digits.count == Self.nicLength
+    }
+
+    
     var isPhoneValid: Bool {
-        let digits = trimmed(phone).filter(\.isNumber)
-        return digits.count >= 9 && digits.count <= 15
+        guard let digits = cleanedDigits(phone) else { return false }
+        return digits.count == Self.phoneLength
     }
 
     var isFormValid: Bool {
         !trimmed(fullName).isEmpty &&
-        !trimmed(nic).isEmpty &&
+        isNICValid &&
         !trimmed(address).isEmpty &&
         isEmailValid &&
         isPhoneValid &&
         password.count >= 6
     }
+
+    
+
+    var nicErrorText: String? {
+        guard !trimmed(nic).isEmpty, !isNICValid else { return nil }
+        return "NIC must be exactly \(Self.nicLength) digits."
+    }
+
+    var phoneErrorText: String? {
+        guard !trimmed(phone).isEmpty, !isPhoneValid else { return nil }
+        return "Phone number must be exactly \(Self.phoneLength) digits."
+    }
+
+   
 
     func createAccount() async {
         guard isFormValid, !isLoading else { return }
@@ -49,12 +82,12 @@ final class SignUpViewModel: ObservableObject {
         do {
             try await AuthService.register(
                 fullName: trimmed(fullName),
-                nic: trimmed(nic).uppercased(),
+                nic: cleanedDigits(nic) ?? trimmed(nic),
                 address: trimmed(address),
                 email: trimmed(email).lowercased(),
-                phone: trimmed(phone),
+                phone: cleanedDigits(phone) ?? trimmed(phone),
                 password: password,
-                role: role                      
+                role: role
             )
             showSuccess = true
         } catch {
