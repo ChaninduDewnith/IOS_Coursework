@@ -93,10 +93,7 @@ struct WorkerProfileView: View {
                     isOn: $notificationsOn
                 )
 
-                toggleRow(
-                    title: "Location Services",
-                    isOn: $locationOn
-                )
+                
 
                
                 Button {
