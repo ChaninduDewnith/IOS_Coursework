@@ -476,6 +476,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Workly;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock the app.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find workers near you.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -511,6 +512,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Workly;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to unlock the app.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find workers near you.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
